@@ -1,0 +1,44 @@
+{
+  "name": "mbg-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && node dist/index.js",
+    "migrate": "npm run build && node dist/db/migrate.js",
+    "seed": "npm run build && node dist/db/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibrahim-idrus/MBG-Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ibrahim-idrus/MBG-Project/issues"
+  },
+  "homepage": "https://github.com/ibrahim-idrus/MBG-Project#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
+    "hono": "^4.13.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "typescript": "^7.0.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "bcrypt@6.0.0": true
+  }
+}
