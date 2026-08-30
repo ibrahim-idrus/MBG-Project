@@ -39,7 +39,8 @@ data
 # Misc
 .cache/
 coverage/
-
 # commandcode
 .commandcode
 
+# worktrees
+.worktrees/

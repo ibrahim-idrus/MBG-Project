@@ -1,124 +1,30 @@
 import type { FC } from 'hono/jsx';
 import { AdminLayout } from '../layouts/AdminLayout.js';
-import { StatCard } from '../components/StatCard.js';
-import { StatusBadge } from '../components/StatusBadge.js';
 import { Button } from '../components/Button.js';
-import { Modal } from '../components/Modal.js';
-import { getAspirationStats, getAspirations } from '../db/queries.js';
+import { ClientScript } from '../components/ClientScript.js';
 
-export const AspirasiPage: FC = () => {
-  const stats = getAspirationStats();
-  const aspirations = getAspirations(20);
+const script = String.raw`
+(() => {
+  const rows = document.getElementById('aspiration-rows'); const message = document.getElementById('aspiration-message'); const modal = document.getElementById('aspiration-modal'); const form = document.getElementById('aspiration-form'); let currentId = null;
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char])); const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(response.status === 401 ? 'Sesi berakhir. Silakan masuk kembali.' : Object.values(data.errors || {}).join(' ') || data.message || 'Permintaan gagal.'); return data; }; const notify = (text, error = false) => {
+    let target = message;
+    if (error && !modal.classList.contains('hidden')) {
+      target = form.querySelector('[role="alert"]');
+      if (!target) { target = document.createElement('div'); target.setAttribute('role', 'alert'); form.prepend(target); }
+    }
+    target.textContent = text;
+    target.className = 'md:col-span-2 mb-4 rounded-lg px-4 py-3 ' + (error ? 'bg-error-container text-on-error-container' : 'bg-tertiary-fixed text-on-tertiary-fixed');
+    target.hidden = !text;
+  };
+  const load = async () => { try { const result = await api('/api/admin/aspirations?per_page=100&sort=newest'); rows.innerHTML = result.data.length ? result.data.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3"><div class="font-semibold">'+esc(item.sender_name)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.sender_email || '-')+'</div></td><td class="p-3">'+esc(item.category)+'</td><td class="p-3 max-w-md">'+esc(item.description)+'</td><td class="p-3">'+esc(item.status)+'</td><td class="p-3 text-right"><button type="button" data-edit="'+item.id+'" class="text-primary">Detail / Tanggapi</button></td></tr>').join('') : '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant">Belum ada aspirasi.</td></tr>'; } catch (error) { notify(error.message, true); } };
+  rows.addEventListener('click', async (event) => { const button = event.target.closest('button[data-edit]'); if (!button) return; try { const item = (await api('/api/admin/aspirations/'+button.dataset.edit)).data; currentId = item.id; form.querySelector('[role="alert"]')?.remove(); form.elements.status.value = item.status; form.elements.admin_response.value = item.admin_response || ''; document.getElementById('aspiration-detail').innerHTML = '<strong>'+esc(item.sender_name)+'</strong><br>'+esc(item.sender_email || '-')+'<br><br>'+esc(item.description); modal.classList.remove('hidden'); } catch (error) { notify(error.message, true); } });
+  document.getElementById('aspiration-close').addEventListener('click', () => modal.classList.add('hidden')); form.addEventListener('submit', async (event) => { event.preventDefault(); try { const payload = Object.fromEntries(new FormData(form).entries()); if (!payload.admin_response.trim()) delete payload.admin_response; await api('/api/admin/aspirations/'+currentId, { method: 'PATCH', headers: {'content-type':'application/json'}, body: JSON.stringify(payload) }); modal.classList.add('hidden'); notify('Aspirasi berhasil diperbarui.'); load(); } catch (error) { notify(error.message, true); } }); load();
+})();
+`;
 
-  return (
-    <AdminLayout title="Manajemen Aspirasi" activePage="/admin/aspirasi">
-      <div class="mb-8">
-        <h2 class="font-display-lg text-display-lg font-bold text-on-surface">Manajemen Aspirasi</h2>
-        <p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-2xl">Pantau dan kelola umpan balik, saran, serta keluhan pengguna terkait program MBG secara terpusat untuk memastikan transparansi dan tindak lanjut yang efektif.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-8">
-        <StatCard icon="inbox" iconColor="text-primary-container" iconBg="bg-primary-container/20" label="Total Aspirasi" value={stats.total.toLocaleString()} />
-        <StatCard icon="pending_actions" iconColor="text-secondary-container" iconBg="bg-secondary-container/20" label="Belum Ditanggapi" value={stats.belumDitanggapi.toLocaleString()} />
-        <StatCard icon="sync" iconColor="text-blue-600" iconBg="bg-blue-100" label="Dalam Proses" value={stats.dalamProses.toLocaleString()} />
-        <StatCard icon="task_alt" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/20" label="Selesai" value={stats.selesai.toLocaleString()} />
-      </div>
-
-      <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div class="p-card-padding border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h3 class="font-headline-md text-headline-md text-on-surface">Daftar Aspirasi Terbaru</h3>
-          <div class="flex items-center gap-2">
-            <Button variant="ghost" shape="pill">
-              <span class="material-symbols-outlined text-[18px]">filter_list</span>
-              Filter
-            </Button>
-            <Button variant="primary" shape="pill">
-              <span class="material-symbols-outlined text-[18px]">download</span>
-              Ekspor
-            </Button>
-          </div>
-        </div>
-        <div class="overflow-x-auto w-full">
-          <table class="w-full text-left border-collapse min-w-[800px]">
-            <thead>
-              <tr class="bg-surface-container-low border-b border-outline-variant">
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Nama User</th>
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tanggal</th>
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Kategori</th>
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Aspirasi</th>
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
-                <th class="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="font-body-md text-body-md text-on-surface divide-y divide-outline-variant">
-              {aspirations.map((item: any) => (
-                <tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick={`document.getElementById('aspirasi-detail-modal').classList.remove('hidden')`}>
-                  <td class="p-4 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">{item.sender_name.charAt(0)}</div>
-                    <span class="font-semibold">{item.sender_name}</span>
-                  </td>
-                  <td class="p-4 text-on-surface-variant">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
-                  <td class="p-4">{item.category}</td>
-                  <td class="p-4 max-w-xs truncate text-on-surface-variant">{item.description}</td>
-                  <td class="p-4"><StatusBadge variant={item.status} /></td>
-                  <td class="p-4 text-center">
-                    <button class="text-primary font-semibold hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors flex items-center justify-center mx-auto gap-1">
-                      Detail <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div class="p-4 border-t border-outline-variant flex items-center justify-between text-body-sm text-on-surface-variant">
-          <span>Menampilkan 1-4 dari 1,248 aspirasi</span>
-          <div class="flex items-center gap-1">
-            <button class="p-1 rounded hover:bg-surface-container transition-colors disabled:opacity-50" disabled><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
-            <button class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center">1</button>
-            <button class="w-8 h-8 rounded hover:bg-surface-container transition-colors flex items-center justify-center">2</button>
-            <button class="w-8 h-8 rounded hover:bg-surface-container transition-colors flex items-center justify-center">3</button>
-            <span>...</span>
-            <button class="p-1 rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
-          </div>
-        </div>
-      </div>
-
-      <Modal
-        id="aspirasi-detail-modal"
-        title="Detail Aspirasi"
-        maxWidth="max-w-2xl"
-        footer={
-          <>
-            <Button variant="secondary" shape="rounded" onclick={`document.getElementById('aspirasi-detail-modal').classList.add('hidden')`}>Batal</Button>
-            <Button variant="primary" shape="rounded">Kirim Balasan & Simpan Status</Button>
-          </>
-        }
-      >
-        <div>
-          <h4 class="font-semibold text-on-surface text-lg">Budi Santoso</h4>
-          <p class="text-body-sm text-on-surface-variant">Makanan &bull; 24 Okt 2023, 14:30</p>
-        </div>
-        <div class="space-y-2">
-          <label class="font-label-md text-label-md text-on-surface-variant uppercase">Pesan User</label>
-          <div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
-            <p class="text-body-md text-on-surface leading-relaxed">Porsi makan siang hari ini terasa kurang mengenyangkan, terutama untuk lauk proteinnya. Mohon bisa ditinjau kembali standar porsinya agar gizi anak-anak terpenuhi dengan baik.</p>
-          </div>
-        </div>
-        <div class="space-y-3">
-          <label class="font-label-md text-label-md text-on-surface-variant uppercase">Berikan Tanggapan</label>
-          <textarea class="w-full p-4 rounded-lg border border-outline-variant bg-surface focus:ring-2 focus:ring-primary focus:border-transparent text-body-md min-h-[120px]" placeholder="Tulis balasan Anda di sini..."></textarea>
-        </div>
-        <div class="space-y-2">
-          <label class="font-label-md text-label-md text-on-surface-variant uppercase">Update Status</label>
-          <select class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer">
-            <option value="pending" selected>Pending</option>
-            <option value="proses">Proses</option>
-            <option value="selesai">Selesai</option>
-            <option value="ditolak">Ditolak</option>
-          </select>
-        </div>
-      </Modal>
-    </AdminLayout>
-  );
-};
+export const AspirasiPage: FC = () => (
+  <AdminLayout title="Manajemen Aspirasi" activePage="/admin/aspirasi">
+    <div><div class="mb-8"><h2 class="font-display-lg text-display-lg font-bold text-on-surface">Manajemen Aspirasi</h2><p class="font-body-md text-body-md text-on-surface-variant mt-2">Pantau dan tindak lanjuti umpan balik masyarakat.</p></div><div id="aspiration-message" hidden></div><div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden"><div class="p-card-padding border-b border-surface-variant flex justify-between items-center"><h3 class="font-headline-md text-headline-md">Daftar Aspirasi</h3><Button variant="secondary" shape="rounded" type="button" onclick="location.reload()">Muat ulang</Button></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-surface-container-low"><tr><th class="p-3">Pengirim</th><th class="p-3">Kategori</th><th class="p-3">Aspirasi</th><th class="p-3">Status</th><th class="p-3 text-right">Aksi</th></tr></thead><tbody id="aspiration-rows"></tbody></table></div></div><div id="aspiration-modal" class="hidden fixed inset-0 z-30 bg-black/30 p-4 overflow-y-auto"><div class="bg-surface-card max-w-2xl mx-auto mt-10 rounded-xl p-6"><div class="flex justify-between items-center mb-5"><h3 class="font-headline-md text-headline-md">Detail & Tanggapan</h3><button id="aspiration-close" type="button" class="text-2xl" aria-label="Tutup">×</button></div><div id="aspiration-detail" class="bg-surface-container-low rounded-lg p-4 mb-4"></div><form id="aspiration-form" class="space-y-4"><label>Status<select name="status" class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="pending">Pending</option><option value="in_progress">Dalam proses</option><option value="completed">Selesai</option><option value="rejected">Ditolak</option></select></label><label>Tanggapan<textarea name="admin_response" class="mt-1 w-full border border-outline-variant rounded-lg p-2 min-h-[120px]"></textarea></label><div class="flex justify-end"><button type="submit" class="bg-primary text-on-primary rounded-lg px-5 py-2">Simpan</button></div></form></div></div></div>
+    <ClientScript>{script}</ClientScript>
+  </AdminLayout>
+);
