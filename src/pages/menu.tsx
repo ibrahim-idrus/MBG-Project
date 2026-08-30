@@ -10,17 +10,52 @@ const script = String.raw`
   const rows = document.getElementById('menu-rows');
   const message = document.getElementById('menu-message');
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-  const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || 'Permintaan gagal.'); return data; };
-  const notify = (text, error = false) => { message.textContent = text; message.className = error ? 'mb-4 rounded-lg bg-error-container text-on-error-container px-4 py-3' : 'mb-4 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed px-4 py-3'; message.hidden = !text; };
+  const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(response.status === 401 ? 'Sesi berakhir. Silakan masuk kembali.' : Object.values(data.errors || {}).join(' ') || data.message || 'Permintaan gagal.'); return data; };
+  const notify = (text, error = false) => {
+    let target = message;
+    if (error && !modal.classList.contains('hidden')) {
+      target = form.querySelector('[role="alert"]');
+      if (!target) { target = document.createElement('div'); target.setAttribute('role', 'alert'); form.prepend(target); }
+    }
+    target.textContent = text;
+    target.className = 'md:col-span-2 mb-4 rounded-lg px-4 py-3 ' + (error ? 'bg-error-container text-on-error-container' : 'bg-tertiary-fixed text-on-tertiary-fixed');
+    target.hidden = !text;
+  };
   const setValue = (name, value) => { form.elements[name].value = value ?? ''; };
-  const loadOptions = async () => { const [kitchens, schools] = await Promise.all([api('/api/admin/kitchens?per_page=100'), api('/api/admin/schools?per_page=100')]); document.getElementById('menu-kitchen').insertAdjacentHTML('beforeend', kitchens.data.map((item) => '<option value="'+item.id+'">'+esc(item.name)+' ('+esc(item.code)+')</option>').join('')); document.getElementById('menu-school').insertAdjacentHTML('beforeend', schools.data.map((item) => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('')); };
+  let kitchens = [];
+  let schools = [];
+  const kitchenSelect = document.getElementById('menu-kitchen');
+  const schoolSelect = document.getElementById('menu-school');
+  const setup = document.createElement('div');
+  setup.className = 'md:col-span-2 rounded-lg bg-surface-container-low p-4 text-sm';
+  setup.hidden = true;
+  form.prepend(setup);
+  const renderSchools = (selected = '') => {
+    const matching = schools.filter(item => String(item.kitchen_id) === kitchenSelect.value);
+    schoolSelect.innerHTML = '<option value="">Pilih sekolah</option>' + matching.map(item => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('');
+    schoolSelect.value = String(selected);
+    schoolSelect.disabled = !kitchenSelect.value || matching.length === 0;
+    const missing = kitchens.length === 0 ? 'Belum ada dapur. Tambahkan dapur dan sekolah terlebih dahulu.' : schools.length === 0 ? 'Belum ada sekolah. Tambahkan sekolah ke dapur terlebih dahulu.' : kitchenSelect.value && matching.length === 0 ? 'Dapur ini belum memiliki sekolah. Tambahkan sekolah atau pilih dapur lain.' : '';
+    setup.hidden = !missing;
+    setup.innerHTML = esc(missing)+' <a href="/admin/lokasi" class="text-primary underline font-semibold">Kelola dapur dan sekolah</a>';
+    const submit = form.querySelector('button[type="submit"]');
+    submit.disabled = Boolean(missing);
+    submit.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+  };
+  kitchenSelect.addEventListener('change', () => renderSchools());
+  const loadOptions = async () => {
+    const [kitchenResult, schoolResult] = await Promise.all([api('/api/admin/kitchens?per_page=100'), api('/api/admin/schools?per_page=100')]);
+    kitchens = kitchenResult.data; schools = schoolResult.data;
+    kitchenSelect.innerHTML = '<option value="">Pilih dapur</option>' + kitchens.map(item => '<option value="'+item.id+'">'+esc(item.name)+' ('+esc(item.code)+')</option>').join('');
+    renderSchools();
+  };
   const render = (items) => { rows.innerHTML = items.length ? items.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3">'+esc(item.menu_date)+'</td><td class="p-3"><div class="font-semibold">'+esc(item.name)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.kitchen?.name)+' · '+esc(item.school?.name)+'</div></td><td class="p-3">'+esc(item.meal_type)+'</td><td class="p-3 text-right">'+esc(item.calories ?? '-')+' kcal</td><td class="p-3 text-right"><button type="button" data-edit="'+item.id+'" class="text-primary mr-3">Edit</button><button type="button" data-delete="'+item.id+'" class="text-error">Hapus</button></td></tr>').join('') : '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant">Belum ada menu.</td></tr>'; };
-  const load = async () => { try { const params = new URLSearchParams({ per_page: '100', sort: document.getElementById('menu-sort').value }); const search = document.getElementById('menu-search').value.trim(); const date = document.getElementById('menu-date-filter').value; const meal = document.getElementById('menu-meal-filter').value; if (search) params.set('search', search); if (date) params.set('date', date); if (meal) params.set('meal_type', meal); const result = await api('/api/admin/menus?'+params); render(result.data); notify(''); } catch (error) { notify(error.message, true); } };
-  const open = async (id) => { form.reset(); form.dataset.id = id || ''; document.getElementById('menu-modal-title').textContent = id ? 'Edit Menu' : 'Tambah Menu'; if (id) { const item = (await api('/api/admin/menus/'+id)).data; ['name','description','composition','photo_url','menu_date','meal_type','calories','protein','carbohydrates','fat','fiber'].forEach((key) => setValue(key, item[key])); setValue('kitchen_id', item.kitchen_id); setValue('school_id', item.school_id); } modal.classList.remove('hidden'); };
+  const load = async () => { try { const params = new URLSearchParams({ per_page: '100', sort: document.getElementById('menu-sort').value }); const search = document.getElementById('menu-search').value.trim(); const date = document.getElementById('menu-date-filter').value; const meal = document.getElementById('menu-meal-filter').value; if (search) params.set('search', search); if (date) params.set('date', date); if (meal) params.set('meal_type', meal); const result = await api('/api/admin/menus?'+params); render(result.data); } catch (error) { notify(error.message, true); } };
+  const open = async (id) => { form.reset(); form.querySelector('[role="alert"]')?.remove(); form.dataset.id = id || ''; document.getElementById('menu-modal-title').textContent = id ? 'Edit Menu' : 'Tambah Menu'; if (id) { const item = (await api('/api/admin/menus/'+id)).data; ['name','description','composition','photo_url','menu_date','meal_type','calories','protein','carbohydrates','fat','fiber'].forEach((key) => setValue(key, item[key])); setValue('kitchen_id', item.kitchen_id); renderSchools(item.school_id); } else { renderSchools(); } modal.classList.remove('hidden'); };
   document.getElementById('menu-add').addEventListener('click', () => open()); document.getElementById('menu-close').addEventListener('click', () => modal.classList.add('hidden')); document.getElementById('menu-refresh').addEventListener('click', load); ['menu-date-filter','menu-meal-filter','menu-sort'].forEach((id) => document.getElementById(id).addEventListener('change', load)); document.getElementById('menu-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); load(); } });
-  rows.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; try { if (button.dataset.edit) return open(button.dataset.edit); if (button.dataset.delete && confirm('Hapus menu ini?')) { await api('/api/admin/menus/'+button.dataset.delete, { method: 'DELETE' }); notify('Menu berhasil dihapus.'); load(); } } catch (error) { notify(error.message, true); } });
+  rows.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; try { if (button.dataset.edit) { await open(button.dataset.edit); return; } if (button.dataset.delete && confirm('Hapus menu ini?')) { await api('/api/admin/menus/'+button.dataset.delete, { method: 'DELETE' }); notify('Menu berhasil dihapus.'); load(); } } catch (error) { notify(error.message, true); } });
   form.addEventListener('submit', async (event) => { event.preventDefault(); const payload = Object.fromEntries(new FormData(form).entries()); ['calories','protein','carbohydrates','fat','fiber','kitchen_id','school_id'].forEach((key) => { if (payload[key] !== '') payload[key] = Number(payload[key]); }); try { const id = form.dataset.id; await api(id ? '/api/admin/menus/'+id : '/api/admin/menus', { method: id ? 'PATCH' : 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify(payload) }); modal.classList.add('hidden'); notify(id ? 'Menu berhasil diperbarui.' : 'Menu berhasil dibuat.'); load(); } catch (error) { notify(error.message, true); } });
-  loadOptions().then(load).catch((error) => notify(error.message, true)); if (new URLSearchParams(location.search).get('new') === '1') open();
+  loadOptions().then(load).catch((error) => notify(error.message, true)); if (new URLSearchParams(location.search).get('new') === '1' || location.pathname.endsWith('/tambah')) open();
 })();
 `;
 

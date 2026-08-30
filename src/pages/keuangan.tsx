@@ -8,15 +8,36 @@ const script = String.raw`
   const form = document.getElementById('finance-form'); const modal = document.getElementById('finance-modal'); const rows = document.getElementById('finance-rows'); const message = document.getElementById('finance-message');
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   const money = (value) => new Intl.NumberFormat('id-ID').format(Number(value || 0));
-  const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || 'Permintaan gagal.'); return data; };
-  const notify = (text, error = false) => { message.textContent = text; message.className = error ? 'mb-4 rounded-lg bg-error-container text-on-error-container px-4 py-3' : 'mb-4 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed px-4 py-3'; message.hidden = !text; };
+  const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(response.status === 401 ? 'Sesi berakhir. Silakan masuk kembali.' : Object.values(data.errors || {}).join(' ') || data.message || 'Permintaan gagal.'); return data; };
+  const notify = (text, error = false) => {
+    let target = message;
+    if (error && !modal.classList.contains('hidden')) {
+      target = form.querySelector('[role="alert"]');
+      if (!target) { target = document.createElement('div'); target.setAttribute('role', 'alert'); form.prepend(target); }
+    }
+    target.textContent = text;
+    target.className = 'md:col-span-2 mb-4 rounded-lg px-4 py-3 ' + (error ? 'bg-error-container text-on-error-container' : 'bg-tertiary-fixed text-on-tertiary-fixed');
+    target.hidden = !text;
+  };
   const setValue = (name, value) => { form.elements[name].value = value ?? ''; };
-  const loadOptions = async () => { const result = await api('/api/admin/kitchens?per_page=100'); document.getElementById('finance-kitchen').insertAdjacentHTML('beforeend', result.data.map((item) => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('')); };
+  const loadOptions = async () => {
+    const result = await api('/api/admin/kitchens?per_page=100');
+    document.getElementById('finance-kitchen').insertAdjacentHTML('beforeend', result.data.map(item => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join(''));
+    if (!result.data.length) {
+      const setup = document.createElement('div');
+      setup.className = 'md:col-span-2 rounded-lg bg-surface-container-low p-4 text-sm';
+      setup.innerHTML = 'Belum ada dapur. Tambahkan dapur sebelum mencatat transaksi. <a href="/admin/lokasi" class="text-primary underline font-semibold">Kelola dapur dan sekolah</a>';
+      form.prepend(setup);
+      const submit = form.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      submit.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+    }
+  };
   const render = (items) => { rows.innerHTML = items.length ? items.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3">'+esc(item.transaction_date)+'</td><td class="p-3"><div class="font-semibold">'+esc(item.title)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.kitchen?.name)+'</div></td><td class="p-3">'+esc(item.type)+' · '+esc(item.category)+'</td><td class="p-3 text-right '+(item.type === 'OUT' ? 'text-error' : 'text-tertiary')+'">Rp '+money(item.amount)+'</td><td class="p-3 text-right"><button type="button" data-edit="'+item.id+'" class="text-primary mr-3">Edit</button><button type="button" data-delete="'+item.id+'" class="text-error">Hapus</button></td></tr>').join('') : '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant">Belum ada transaksi.</td></tr>'; };
-  const load = async () => { try { const result = await api('/api/admin/finance/transactions?per_page=100&sort=newest'); render(result.data); const stats = await api('/api/admin/finance/statistics?year='+new Date().getFullYear()); const summary = stats.data.summary; document.getElementById('finance-balance').textContent = 'Rp '+money(summary.balance); document.getElementById('finance-income').textContent = 'Rp '+money(summary.total_income); document.getElementById('finance-expense').textContent = 'Rp '+money(summary.total_expenses); notify(''); } catch (error) { notify(error.message, true); } };
-  const open = async (id) => { form.reset(); form.dataset.id = id || ''; document.getElementById('finance-modal-title').textContent = id ? 'Edit Transaksi' : 'Tambah Transaksi'; if (id) { const item = (await api('/api/admin/finance/transactions/'+id)).data; ['type','category','title','amount','transaction_date','description','document_url'].forEach((key) => setValue(key, item[key])); setValue('kitchen_id', item.kitchen_id); } modal.classList.remove('hidden'); };
+  const load = async () => { try { const result = await api('/api/admin/finance/transactions?per_page=100&sort=newest'); render(result.data); const stats = await api('/api/admin/finance/statistics?year='+new Date().getFullYear()); const summary = stats.data.summary; document.getElementById('finance-balance').textContent = 'Rp '+money(summary.balance); document.getElementById('finance-income').textContent = 'Rp '+money(summary.total_income); document.getElementById('finance-expense').textContent = 'Rp '+money(summary.total_expenses); } catch (error) { notify(error.message, true); } };
+  const open = async (id) => { form.reset(); form.querySelector('[role="alert"]')?.remove(); form.dataset.id = id || ''; document.getElementById('finance-modal-title').textContent = id ? 'Edit Transaksi' : 'Tambah Transaksi'; if (id) { const item = (await api('/api/admin/finance/transactions/'+id)).data; ['type','category','title','amount','transaction_date','description','document_url'].forEach((key) => setValue(key, item[key])); setValue('kitchen_id', item.kitchen_id); } modal.classList.remove('hidden'); };
   document.getElementById('finance-add').addEventListener('click', () => open()); document.getElementById('finance-close').addEventListener('click', () => modal.classList.add('hidden'));
-  rows.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; try { if (button.dataset.edit) return open(button.dataset.edit); if (button.dataset.delete && confirm('Hapus transaksi ini?')) { await api('/api/admin/finance/transactions/'+button.dataset.delete, { method: 'DELETE' }); notify('Transaksi berhasil dihapus.'); load(); } } catch (error) { notify(error.message, true); } });
+  rows.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; try { if (button.dataset.edit) { await open(button.dataset.edit); return; } if (button.dataset.delete && confirm('Hapus transaksi ini?')) { await api('/api/admin/finance/transactions/'+button.dataset.delete, { method: 'DELETE' }); notify('Transaksi berhasil dihapus.'); load(); } } catch (error) { notify(error.message, true); } });
   form.addEventListener('submit', async (event) => { event.preventDefault(); const payload = Object.fromEntries(new FormData(form).entries()); payload.amount = Number(payload.amount); payload.kitchen_id = Number(payload.kitchen_id); try { const id = form.dataset.id; await api(id ? '/api/admin/finance/transactions/'+id : '/api/admin/finance/transactions', { method: id ? 'PATCH' : 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify(payload) }); modal.classList.add('hidden'); notify(id ? 'Transaksi berhasil diperbarui.' : 'Transaksi berhasil dibuat.'); load(); } catch (error) { notify(error.message, true); } });
   loadOptions().then(load).catch((error) => notify(error.message, true));
 })();

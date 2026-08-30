@@ -2,8 +2,19 @@ import type { FC } from 'hono/jsx';
 import { AdminLayout } from '../layouts/AdminLayout.js';
 import { StatCard } from '../components/StatCard.js';
 import { KelolaDataTile } from '../components/KelolaDataTile.js';
-import { StatusBadge } from '../components/StatusBadge.js';
-import { laporanTerbaru, fiturAdmin, type LaporanItem } from '../data/dashboard-mock.js';
+import { fiturAdmin } from '../data/dashboard-mock.js';
+import { ClientScript } from '../components/ClientScript.js';
+
+const script = String.raw`
+(() => {
+  const money = (value) => new Intl.NumberFormat('id-ID').format(Number(value || 0));
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  const status = { pending: ['Pending', 'bg-yellow-100 text-yellow-800'], in_progress: ['Dalam proses', 'bg-blue-100 text-blue-700'], completed: ['Selesai', 'bg-green-100 text-green-700'], rejected: ['Ditolak', 'bg-red-100 text-red-700'] };
+  const api = async (url) => { const response = await fetch(url); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(Object.values(data.errors || {}).join(' ') || data.message || 'Data dashboard tidak dapat dimuat.'); return data; };
+  const load = async () => { try { const [finance, aspirations, pending] = await Promise.all([api('/api/admin/finance/statistics?year='+new Date().getFullYear()), api('/api/admin/aspirations?per_page=5&sort=newest'), api('/api/admin/aspirations?status=pending&per_page=1')]); const summary = finance.data.summary; document.getElementById('dashboard-income').textContent = 'Rp'+money(summary.total_income); document.getElementById('dashboard-expense').textContent = 'Rp'+money(summary.total_expenses); document.getElementById('dashboard-balance').textContent = 'Rp'+money(summary.balance); document.getElementById('dashboard-reports').textContent = money(pending.pagination.total); const rows = document.getElementById('dashboard-report-rows'); rows.innerHTML = aspirations.data.length ? aspirations.data.map((item, index) => { const [label, style] = status[item.status] || [item.status, 'bg-surface-container text-on-surface-variant']; return '<tr class="border-b border-surface-variant/50 hover:bg-surface-container-lowest"><td class="py-3 px-4 text-on-surface-variant">'+(index + 1)+'</td><td class="py-3 px-4 whitespace-nowrap">'+esc((item.created_at || '').slice(0, 10))+'</td><td class="py-3 px-4">Publik</td><td class="py-3 px-4 text-on-surface-variant">'+esc(item.category)+'</td><td class="py-3 px-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold '+style+'">'+esc(label)+'</span></td><td class="py-3 px-4 text-center"><a href="/admin/aspirasi" class="text-primary" aria-label="Lihat aspirasi"><span class="material-symbols-outlined text-[20px]">visibility</span></a></td></tr>'; }).join('') : '<tr><td colspan="6" class="py-8 text-center text-on-surface-variant">Belum ada laporan.</td></tr>'; } catch (error) { const message = document.getElementById('dashboard-message'); message.textContent = error.message; message.hidden = false; } };
+  load();
+})();
+`;
 
 export const DashboardPage: FC = () => {
   return (
@@ -19,11 +30,12 @@ export const DashboardPage: FC = () => {
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard icon="account_balance_wallet" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/10" label="Dana Diterima" value="Rp150.000.000" />
-            <StatCard icon="outbox" iconColor="text-secondary-container" iconBg="bg-secondary-container/10" label="Total Pengeluaran" value="Rp127.500.000" />
-            <StatCard icon="savings" iconColor="text-primary-container" iconBg="bg-primary-container/10" label="Sisa Dana" value="Rp22.500.000" />
-            <StatCard icon="report" iconColor="text-error" iconBg="bg-error/10" label="Laporan Baru" value="12" />
+            <StatCard icon="account_balance_wallet" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/10" label="Dana Diterima" value="Memuat..." valueId="dashboard-income" />
+            <StatCard icon="outbox" iconColor="text-secondary-container" iconBg="bg-secondary-container/10" label="Total Pengeluaran" value="Memuat..." valueId="dashboard-expense" />
+            <StatCard icon="savings" iconColor="text-primary-container" iconBg="bg-primary-container/10" label="Sisa Dana" value="Memuat..." valueId="dashboard-balance" />
+            <StatCard icon="report" iconColor="text-error" iconBg="bg-error/10" label="Laporan Baru" value="Memuat..." valueId="dashboard-reports" />
           </div>
+          <div id="dashboard-message" hidden class="mb-4 rounded-lg bg-error-container text-on-error-container px-4 py-3"></div>
 
           <div class="mb-8">
             <h3 class="font-headline-md text-headline-md text-on-surface mb-4">Kelola Data</h3>
@@ -54,24 +66,7 @@ export const DashboardPage: FC = () => {
                     <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody class="font-body-md text-body-md text-on-surface">
-                  {laporanTerbaru.map((item: LaporanItem) => (
-                    <tr class="border-b border-surface-variant/50 hover:bg-surface-container-lowest transition-colors">
-                      <td class="py-3 px-4 text-on-surface-variant">{item.no}</td>
-                      <td class="py-3 px-4 whitespace-nowrap">{item.tanggal}</td>
-                      <td class="py-3 px-4">{item.dapur}</td>
-                      <td class="py-3 px-4 text-on-surface-variant">{item.kategori}</td>
-                      <td class="py-3 px-4">
-                        <StatusBadge variant={item.status} />
-                      </td>
-                      <td class="py-3 px-4 text-center">
-                        <button class="text-primary hover:bg-primary-container hover:text-on-primary-container p-1.5 rounded-full transition-colors">
-                          <span class="material-symbols-outlined text-[20px]">visibility</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                <tbody id="dashboard-report-rows" class="font-body-md text-body-md text-on-surface"><tr><td colspan={6} class="py-8 text-center text-on-surface-variant">Memuat laporan...</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -96,6 +91,7 @@ export const DashboardPage: FC = () => {
           </div>
         </div>
       </div>
+      <ClientScript>{script}</ClientScript>
     </AdminLayout>
   );
 };
