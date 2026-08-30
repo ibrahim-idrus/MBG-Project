@@ -15,10 +15,10 @@ import { LoginPage } from './pages/auth/login.js';
 import { RegisterPage } from './pages/auth/register.js';
 import { hashPassword, verifyPassword } from './auth/password.js';
 import { createSession, revokeSession } from './auth/session.js';
+import { requireAdmin, SESSION_COOKIE, type AuthEnv } from './auth/middleware.js';
 import { isSafeNextPath, validateLogin, validateRegistration } from './auth/validation.js';
 import { createDatabase } from './db/database.js';
 
-const SESSION_COOKIE = 'mbg_session';
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
 
@@ -49,8 +49,8 @@ function isDuplicateEmailError(error: unknown): boolean {
   return error instanceof Error && /UNIQUE constraint failed: admins\.email|idx_admins_email/i.test(error.message);
 }
 
-export function createApp(db: Database.Database = createDatabase()): Hono {
-  const app = new Hono();
+export function createApp(db: Database.Database = createDatabase()): Hono<AuthEnv> {
+  const app = new Hono<AuthEnv>();
 
   app.get('/', (c) => c.html(<LokasiPage />));
 
@@ -155,6 +155,11 @@ export function createApp(db: Database.Database = createDatabase()): Hono {
   app.get('/menu', (c) => c.html(<JadwalMenuPage />));
   app.get('/laporan', (c) => c.html(<LaporanPage />));
   app.get('/keuangan', (c) => c.html(<KeuanganUserPage />));
+
+  const adminMiddleware = requireAdmin(db);
+  app.use('/admin', adminMiddleware);
+  app.use('/admin/*', adminMiddleware);
+  app.get('/api/auth/me', adminMiddleware, (c) => c.json({ data: c.get('admin') }));
 
   app.get('/admin', (c) => c.html(<DashboardPage />));
   app.get('/admin/keuangan', (c) => c.html(<KeuanganPage />));

@@ -64,17 +64,15 @@ export const Sidebar: FC<SidebarProps> = ({ activePage, variant = 'admin' }) => 
         })}
       </nav>
       <div class="mt-auto border-t border-surface-variant pt-4 px-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
-            <div class="w-full h-full bg-primary-container flex items-center justify-center text-on-primary-container">
-              <span class="material-symbols-outlined text-sm">person</span>
-            </div>
-          </div>
-          <div>
-            <p class="font-headline-sm text-headline-sm text-on-surface">Admin SPPG</p>
-            <p class="font-label-md text-label-md text-on-surface-variant">Administrator</p>
-          </div>
-        </div>
+        <form action="/logout" method="post">
+          <button
+            type="submit"
+            class="w-full text-on-surface-variant hover:bg-surface-container-high hover:text-primary rounded-full px-4 py-2 flex items-center gap-3 transition-colors"
+          >
+            <span class="material-symbols-outlined">logout</span>
+            <span class="font-label-md text-label-md">Keluar</span>
+          </button>
+        </form>
       </div>
     </aside>
   );

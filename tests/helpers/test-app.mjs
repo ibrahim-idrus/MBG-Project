@@ -1,4 +1,5 @@
 import { createApp } from '../../dist/server.js';
+import { createSession } from '../../dist/auth/session.js';
 import { createTestDatabase, insertAdmin } from './test-database.mjs';
 
 export function createTestApp() {
@@ -17,4 +18,11 @@ export function createTestAppWithAdmin(overrides = {}) {
   `).get(adminId);
 
   return { app, db, admin };
+}
+
+export function createTestAppWithSession(overrides = {}) {
+  const { app, db, admin } = createTestAppWithAdmin(overrides);
+  const session = createSession(db, admin.id);
+
+  return { app, db, admin, sessionCookie: `mbg_session=${session.token}` };
 }
