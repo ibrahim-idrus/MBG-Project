@@ -145,9 +145,11 @@ git commit -m "feat: add password validation and session services"
 
 **Files:**
 - Modify: `src/server.tsx`
+- Modify: `src/index.ts`
 - Modify: `src/pages/auth/login.tsx`
 - Modify: `src/pages/auth/register.tsx`
 - Create: `tests/auth/auth-routes.test.mjs`
+- Create: `tests/auth/http-adapter.test.mjs`
 - Create: `tests/helpers/test-app.mjs`
 
 **Interfaces:**
@@ -155,6 +157,8 @@ git commit -m "feat: add password validation and session services"
 - `POST /register` accepts `name`, `email`, `password`, and `confirm_password`, creates an active admin with role `admin`, sets the session cookie, and redirects to `/admin`.
 - `POST /login` accepts `email`, `password`, and optional `next`, sets a session cookie, and redirects to a safe local path or `/admin`.
 - `POST /logout` revokes the current cookie session and sends an expired replacement cookie before redirecting to `/login`.
+- The production Node HTTP adapter forwards POST request bodies into the Fetch `Request`, so browser form submissions reach the Hono handlers.
+- `createFetchRequest(req: IncomingMessage, url: URL): Request` preserves incoming headers and forwards a body for body-capable methods; the adapter can be tested without starting the listener.
 - `createTestApp()` returns `{ app, db }` using an isolated migrated database; `createTestAppWithAdmin(overrides?)` inserts an admin and returns `{ app, db, admin }`.
 
 - [ ] **Step 1: Write failing route tests**
@@ -185,9 +189,9 @@ Run: `npm run build; node --test tests/auth/auth-routes.test.mjs`
 
 Expected: FAIL because `createApp` and the handlers are not implemented.
 
-- [ ] **Step 3: Implement the app factory and auth handlers**
+- [ ] **Step 3: Implement the app factory, production body forwarding, and auth handlers**
 
-Move existing route registration into `createApp(db = createDatabase())` and export `app = createApp()` for the current entry point. Parse form bodies with Hono’s `c.req.parseBody()`, use the auth services, translate duplicate-email SQLite errors to a validation response, set cookies with `HttpOnly`, `SameSite=Lax`, `Path=/`, and conditional `Secure`, and render pages with an `error` prop on failures. Use one generic login error for nonexistent, incorrect, or inactive accounts.
+Move existing route registration into `createApp(db = createDatabase())` and export `app = createApp()` for the current entry point. Update the Node HTTP adapter to pass a one-shot readable request body to Fetch `Request` for methods that can carry bodies, preserving the incoming content headers. Parse form bodies with Hono’s `c.req.parseBody()`, use the auth services, translate duplicate-email SQLite errors to a validation response, set cookies with `HttpOnly`, `SameSite=Lax`, `Path=/`, and conditional `Secure`, and render pages with an `error` prop on failures. Use one generic login error for nonexistent, incorrect, or inactive accounts. Add an adapter-level regression test that sends a real Node `IncomingMessage`-style POST body through the adapter path and verifies the Hono handler receives it.
 
 - [ ] **Step 4: Run focused route tests and typecheck**
 
@@ -198,7 +202,7 @@ Expected: PASS and a successful TypeScript build.
 - [ ] **Step 5: Commit the auth routes**
 
 ```bash
-git add src/server.tsx src/pages/auth/login.tsx src/pages/auth/register.tsx tests/auth/auth-routes.test.mjs
+git add src/server.tsx src/index.ts src/pages/auth/login.tsx src/pages/auth/register.tsx tests/auth/auth-routes.test.mjs tests/auth/http-adapter.test.mjs
 git commit -m "feat: make admin auth routes functional"
 ```
 
