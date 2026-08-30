@@ -4,25 +4,12 @@ import { StatCard } from '../components/StatCard.js';
 import { StatusBadge } from '../components/StatusBadge.js';
 import { Button } from '../components/Button.js';
 import { Modal } from '../components/Modal.js';
-
-interface AspirasiItem {
-  nama: string;
-  inisial: string;
-  avatarColor: string;
-  tanggal: string;
-  kategori: string;
-  aspirasi: string;
-  status: 'pending' | 'proses' | 'selesai' | 'ditolak';
-}
-
-const aspirasiData: AspirasiItem[] = [
-  { nama: 'Budi Santoso', inisial: 'AN', avatarColor: 'bg-secondary-fixed text-on-secondary-fixed', tanggal: '24 Okt 2023, 14:30', kategori: 'Makanan', aspirasi: 'Porsi makan siang hari ini terasa kurang mengenyangkan dibandingkan biasanya...', status: 'pending' },
-  { nama: 'Siti Wahyuni', inisial: 'SW', avatarColor: 'bg-primary-fixed text-on-primary-fixed', tanggal: '24 Okt 2023, 10:15', kategori: 'Fasilitas', aspirasi: 'AC di ruang makan sektor B sepertinya rusak, sangat panas saat jam istirahat.', status: 'proses' },
-  { nama: 'Agus Pratama', inisial: 'AP', avatarColor: 'bg-tertiary-fixed text-on-tertiary-fixed', tanggal: '23 Okt 2023, 16:45', kategori: 'Umum', aspirasi: 'Sistem pendaftaran antrean kemarin sempat down selama 15 menit.', status: 'selesai' },
-  { nama: 'Dian Wulandari', inisial: 'DW', avatarColor: 'bg-error-container text-on-error-container', tanggal: '23 Okt 2023, 09:10', kategori: 'Makanan', aspirasi: 'Tolong sediakan menu lobster untuk makan siang besok.', status: 'ditolak' },
-];
+import { getAspirationStats, getAspirations } from '../db/queries.js';
 
 export const AspirasiPage: FC = () => {
+  const stats = getAspirationStats();
+  const aspirations = getAspirations(20);
+
   return (
     <AdminLayout title="Manajemen Aspirasi" activePage="/admin/aspirasi">
       <div class="mb-8">
@@ -31,10 +18,10 @@ export const AspirasiPage: FC = () => {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-8">
-        <StatCard icon="inbox" iconColor="text-primary-container" iconBg="bg-primary-container/20" label="Total Aspirasi" value="1,248" />
-        <StatCard icon="pending_actions" iconColor="text-secondary-container" iconBg="bg-secondary-container/20" label="Belum Ditanggapi" value="56" />
-        <StatCard icon="sync" iconColor="text-blue-600" iconBg="bg-blue-100" label="Dalam Proses" value="124" />
-        <StatCard icon="task_alt" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/20" label="Selesai" value="1,068" />
+        <StatCard icon="inbox" iconColor="text-primary-container" iconBg="bg-primary-container/20" label="Total Aspirasi" value={stats.total.toLocaleString()} />
+        <StatCard icon="pending_actions" iconColor="text-secondary-container" iconBg="bg-secondary-container/20" label="Belum Ditanggapi" value={stats.belumDitanggapi.toLocaleString()} />
+        <StatCard icon="sync" iconColor="text-blue-600" iconBg="bg-blue-100" label="Dalam Proses" value={stats.dalamProses.toLocaleString()} />
+        <StatCard icon="task_alt" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/20" label="Selesai" value={stats.selesai.toLocaleString()} />
       </div>
 
       <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
@@ -64,15 +51,15 @@ export const AspirasiPage: FC = () => {
               </tr>
             </thead>
             <tbody class="font-body-md text-body-md text-on-surface divide-y divide-outline-variant">
-              {aspirasiData.map((item) => (
+              {aspirations.map((item: any) => (
                 <tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick={`document.getElementById('aspirasi-detail-modal').classList.remove('hidden')`}>
                   <td class="p-4 flex items-center gap-3">
-                    <div class={`w-8 h-8 rounded-full ${item.avatarColor} flex items-center justify-center font-bold text-xs`}>{item.inisial}</div>
-                    <span class="font-semibold">{item.nama}</span>
+                    <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">{item.sender_name.charAt(0)}</div>
+                    <span class="font-semibold">{item.sender_name}</span>
                   </td>
-                  <td class="p-4 text-on-surface-variant">{item.tanggal}</td>
-                  <td class="p-4">{item.kategori}</td>
-                  <td class="p-4 max-w-xs truncate text-on-surface-variant">{item.aspirasi}</td>
+                  <td class="p-4 text-on-surface-variant">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                  <td class="p-4">{item.category}</td>
+                  <td class="p-4 max-w-xs truncate text-on-surface-variant">{item.description}</td>
                   <td class="p-4"><StatusBadge variant={item.status} /></td>
                   <td class="p-4 text-center">
                     <button class="text-primary font-semibold hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors flex items-center justify-center mx-auto gap-1">

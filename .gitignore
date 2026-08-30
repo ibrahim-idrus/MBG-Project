@@ -31,6 +31,7 @@ npm-debug.log*
 *.db
 *.sqlite
 *.sqlite3
+data
 
 # Vite
 .vite/
@@ -38,3 +39,7 @@ npm-debug.log*
 # Misc
 .cache/
 coverage/
+
+# commandcode
+.commandcode
+

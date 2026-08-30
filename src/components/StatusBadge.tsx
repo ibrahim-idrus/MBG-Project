@@ -1,6 +1,6 @@
 import type { FC } from 'hono/jsx';
 
-type BadgeVariant = 'masuk' | 'keluar' | 'pending' | 'proses' | 'selesai' | 'ditolak' | 'aktif' | 'updated' | 'baru' | 'diperiksa';
+type BadgeVariant = 'masuk' | 'keluar' | 'pending' | 'proses' | 'selesai' | 'ditolak' | 'aktif' | 'updated' | 'baru' | 'diperiksa' | 'in_progress' | 'completed' | 'rejected';
 
 interface StatusBadgeProps {
   variant: BadgeVariant;
@@ -19,6 +19,9 @@ const badgeStyles: Record<BadgeVariant, { bg: string; text: string; dot: string;
   updated: { bg: 'bg-tertiary-container/10', text: 'text-tertiary-container', dot: 'bg-tertiary-container', defaultLabel: 'UPDATED' },
   baru: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-600', defaultLabel: 'Baru' },
   diperiksa: { bg: 'bg-yellow-100', text: 'text-yellow-800', dot: 'bg-yellow-600', defaultLabel: 'Diperiksa' },
+  in_progress: { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-600', defaultLabel: 'Dalam Proses' },
+  completed: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-600', defaultLabel: 'Selesai' },
+  rejected: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-600', defaultLabel: 'Ditolak' },
 };
 
 export const StatusBadge: FC<StatusBadgeProps> = ({ variant, label, showDot = true }) => {

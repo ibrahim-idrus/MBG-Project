@@ -1,27 +1,18 @@
 import type { FC } from 'hono/jsx';
 import { AdminLayout } from '../../layouts/AdminLayout.js';
-
-interface PengeluaranItem {
-  no: number;
-  uraian: string;
-  kategori: string;
-  jumlah: string;
-}
-
-const pengeluaranData: PengeluaranItem[] = [
-  { no: 1, uraian: 'Beras', kategori: 'Bahan Makanan', jumlah: 'Rp5.000.000' },
-  { no: 2, uraian: 'Ayam', kategori: 'Bahan Makanan', jumlah: 'Rp8.500.000' },
-  { no: 3, uraian: 'Sayuran', kategori: 'Bahan Makanan', jumlah: 'Rp3.200.000' },
-  { no: 4, uraian: 'Buah', kategori: 'Bahan Makanan', jumlah: 'Rp2.700.000' },
-];
+import { getFinanceStats, getTransactions } from '../../db/queries.js';
+import { formatCurrency } from '../../utils/format.js';
 
 export const KeuanganUserPage: FC = () => {
+  const stats = getFinanceStats();
+  const transactions = getTransactions(10);
+
   return (
     <AdminLayout title="Transparansi Keuangan" activePage="/keuangan" variant="user">
       <div class="max-w-4xl mx-auto space-y-6">
         <div>
           <h2 class="font-display-lg text-display-lg text-primary mb-1">Transparansi Keuangan</h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">Periode: 18 - 24 Agustus 2026</p>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Data keuangan program MBG secara transparan</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -31,7 +22,7 @@ export const KeuanganUserPage: FC = () => {
             </div>
             <div>
               <p class="font-body-sm text-body-sm text-on-surface-variant">Dana Diterima</p>
-              <p class="font-headline-sm text-headline-sm text-on-surface">Rp150.000.000</p>
+              <p class="font-headline-sm text-headline-sm text-on-surface">{formatCurrency(stats.pemasukanBulanIni)}</p>
             </div>
           </div>
           <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-container-highest flex items-center gap-4 transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer group">
@@ -40,7 +31,7 @@ export const KeuanganUserPage: FC = () => {
             </div>
             <div>
               <p class="font-body-sm text-body-sm text-on-surface-variant">Total Pengeluaran</p>
-              <p class="font-headline-sm text-headline-sm text-on-surface">Rp127.500.000</p>
+              <p class="font-headline-sm text-headline-sm text-on-surface">{formatCurrency(stats.pengeluaranBulanIni)}</p>
             </div>
           </div>
           <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-container-highest flex items-center gap-4 transition-transform hover:-translate-y-1 hover:shadow-md cursor-pointer group">
@@ -70,14 +61,16 @@ export const KeuanganUserPage: FC = () => {
                 </tr>
               </thead>
               <tbody class="font-body-sm text-body-sm">
-                {pengeluaranData.map((item) => (
+                {transactions.map((tx: any, index: number) => (
                   <tr class="border-b border-surface-container-highest hover:bg-surface-bright transition-colors group">
-                    <td class="p-4 text-on-surface-variant">{item.no}</td>
-                    <td class="p-4 font-medium text-on-surface">{item.uraian}</td>
-                    <td class="p-4 text-on-surface-variant">{item.kategori}</td>
-                    <td class="p-4 text-on-surface">{item.jumlah}</td>
+                    <td class="p-4 text-on-surface-variant">{index + 1}</td>
+                    <td class="p-4 font-medium text-on-surface">{tx.title}</td>
+                    <td class="p-4 text-on-surface-variant">{tx.category}</td>
+                    <td class="p-4 text-on-surface">{formatCurrency(tx.amount)}</td>
                     <td class="p-4 text-center">
-                      <button class="text-primary hover:bg-primary-container hover:text-on-primary-container px-3 py-1 rounded-md transition-colors text-xs font-semibold">Lihat</button>
+                      {tx.document_url && (
+                        <button class="text-primary hover:bg-primary-container hover:text-on-primary-container px-3 py-1 rounded-md transition-colors text-xs font-semibold">Lihat</button>
+                      )}
                     </td>
                   </tr>
                 ))}

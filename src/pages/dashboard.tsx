@@ -3,9 +3,14 @@ import { AdminLayout } from '../layouts/AdminLayout.js';
 import { StatCard } from '../components/StatCard.js';
 import { KelolaDataTile } from '../components/KelolaDataTile.js';
 import { StatusBadge } from '../components/StatusBadge.js';
-import { laporanTerbaru, fiturAdmin, type LaporanItem } from '../data/dashboard-mock.js';
+import { getDashboardStats, getRecentAspirations } from '../db/queries.js';
+import { fiturAdmin } from '../data/dashboard-mock.js';
+import { formatCurrency } from '../utils/format.js';
 
 export const DashboardPage: FC = () => {
+  const stats = getDashboardStats();
+  const recentAspirations = getRecentAspirations(5);
+
   return (
     <AdminLayout title="Dashboard" activePage="/admin">
       <div class="flex flex-col lg:flex-row gap-8">
@@ -19,10 +24,10 @@ export const DashboardPage: FC = () => {
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard icon="account_balance_wallet" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/10" label="Dana Diterima" value="Rp150.000.000" />
-            <StatCard icon="outbox" iconColor="text-secondary-container" iconBg="bg-secondary-container/10" label="Total Pengeluaran" value="Rp127.500.000" />
-            <StatCard icon="savings" iconColor="text-primary-container" iconBg="bg-primary-container/10" label="Sisa Dana" value="Rp22.500.000" />
-            <StatCard icon="report" iconColor="text-error" iconBg="bg-error/10" label="Laporan Baru" value="12" />
+            <StatCard icon="account_balance_wallet" iconColor="text-tertiary-container" iconBg="bg-tertiary-container/10" label="Dana Diterima" value={formatCurrency(stats.danaDiterima)} />
+            <StatCard icon="outbox" iconColor="text-secondary-container" iconBg="bg-secondary-container/10" label="Total Pengeluaran" value={formatCurrency(stats.totalPengeluaran)} />
+            <StatCard icon="savings" iconColor="text-primary-container" iconBg="bg-primary-container/10" label="Sisa Dana" value={formatCurrency(stats.sisaDana)} />
+            <StatCard icon="report" iconColor="text-error" iconBg="bg-error/10" label="Laporan Baru" value={stats.laporanBaru.toString()} />
           </div>
 
           <div class="mb-8">
@@ -55,12 +60,12 @@ export const DashboardPage: FC = () => {
                   </tr>
                 </thead>
                 <tbody class="font-body-md text-body-md text-on-surface">
-                  {laporanTerbaru.map((item: LaporanItem) => (
+                  {recentAspirations.map((item: any, index: number) => (
                     <tr class="border-b border-surface-variant/50 hover:bg-surface-container-lowest transition-colors">
-                      <td class="py-3 px-4 text-on-surface-variant">{item.no}</td>
-                      <td class="py-3 px-4 whitespace-nowrap">{item.tanggal}</td>
-                      <td class="py-3 px-4">{item.dapur}</td>
-                      <td class="py-3 px-4 text-on-surface-variant">{item.kategori}</td>
+                      <td class="py-3 px-4 text-on-surface-variant">{index + 1}</td>
+                      <td class="py-3 px-4 whitespace-nowrap">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                      <td class="py-3 px-4">{item.sender_name}</td>
+                      <td class="py-3 px-4 text-on-surface-variant">{item.category}</td>
                       <td class="py-3 px-4">
                         <StatusBadge variant={item.status} />
                       </td>

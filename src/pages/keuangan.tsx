@@ -6,9 +6,13 @@ import { StatusBadge } from '../components/StatusBadge.js';
 import { Button } from '../components/Button.js';
 import { Modal } from '../components/Modal.js';
 import { FileUpload } from '../components/FileUpload.js';
-import { transactions, type Transaction } from '../data/mock.js';
+import { getFinanceStats, getTransactions } from '../db/queries.js';
+import { formatCurrency } from '../utils/format.js';
 
 export const KeuanganPage: FC = () => {
+  const stats = getFinanceStats();
+  const transactions = getTransactions(10);
+
   return (
     <AdminLayout title="Kelola Keuangan" activePage="/admin/keuangan">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -17,7 +21,7 @@ export const KeuanganPage: FC = () => {
           iconColor="text-primary"
           iconBg="bg-primary/10"
           label="Saldo Kas Tersedia"
-          value="Rp 124.500.000"
+          value={formatCurrency(stats.saldoKas)}
           badge={<span class="bg-tertiary-container/10 text-tertiary-container px-2 py-1 rounded text-[10px] font-bold">UPDATED</span>}
         />
         <StatCard
@@ -25,14 +29,14 @@ export const KeuanganPage: FC = () => {
           iconColor="text-tertiary"
           iconBg="bg-tertiary/10"
           label="Pemasukan Bulan Ini"
-          value="Rp 45.000.000"
+          value={formatCurrency(stats.pemasukanBulanIni)}
         />
         <StatCard
           icon="trending_down"
           iconColor="text-error"
           iconBg="bg-error/10"
           label="Pengeluaran Bulan Ini"
-          value="Rp 21.350.000"
+          value={formatCurrency(stats.pengeluaranBulanIni)}
         />
       </div>
 
@@ -86,22 +90,22 @@ export const KeuanganPage: FC = () => {
                 </tr>
               </thead>
               <tbody class="font-body-md text-body-md text-on-surface">
-                {transactions.map((tx) => (
+                {transactions.map((tx: any) => (
                   <tr
                     class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors group cursor-pointer"
                     onclick={`document.getElementById('detail-modal').classList.remove('hidden')`}
                   >
-                    <td class="py-4 px-4 whitespace-nowrap">{tx.date}</td>
+                    <td class="py-4 px-4 whitespace-nowrap">{new Date(tx.transaction_date).toLocaleDateString('id-ID')}</td>
                     <td class="py-4 px-4">
                       <div class="font-medium">{tx.title}</div>
-                      <div class="text-[11px] text-on-surface-variant mt-0.5">{tx.subtitle}</div>
+                      <div class="text-[11px] text-on-surface-variant mt-0.5">{tx.description}</div>
                     </td>
                     <td class="py-4 px-4">
-                      <StatusBadge variant={tx.category} />
+                      <StatusBadge variant={tx.type === 'IN' ? 'masuk' : 'keluar'} />
                     </td>
-                    <td class={`py-4 px-4 text-right font-medium ${tx.category === 'keluar' ? 'text-error' : 'text-tertiary'}`}>{tx.amount}</td>
+                    <td class={`py-4 px-4 text-right font-medium ${tx.type === 'OUT' ? 'text-error' : 'text-tertiary'}`}>{formatCurrency(tx.amount)}</td>
                     <td class="py-4 px-4 text-center">
-                      {tx.hasDocument && (
+                      {tx.document_url && (
                         <button class="text-outline hover:text-primary transition-colors p-1 rounded-full hover:bg-surface-container-high" title="Lihat Dokumen">
                           <span class="material-symbols-outlined text-[20px]">receipt_long</span>
                         </button>
