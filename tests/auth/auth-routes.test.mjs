@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { hashPassword } from '../../dist/auth/password.js';
+import bcrypt from 'bcrypt';
+import { hashPassword, verifyPassword } from '../../dist/auth/password.js';
+import { createApp } from '../../dist/server.js';
 import { createTestApp, createTestAppWithAdmin } from '../helpers/test-app.mjs';
+import { createTestDatabase } from '../helpers/test-database.mjs';
 
 function formBody(values) {
   return new URLSearchParams(values);
@@ -126,6 +129,29 @@ test('login uses one generic error for unknown, incorrect, and inactive accounts
       db.close();
     }
   }
+});
+
+test('unknown-email login still verifies credentials with a valid dummy hash', async (t) => {
+  const db = createTestDatabase();
+  const verifiedHashes = [];
+  const app = createApp(db, async (password, hash) => {
+    verifiedHashes.push(hash);
+    return verifyPassword(password, hash);
+  });
+  t.after(() => db.close());
+
+  const response = await app.request('/login', {
+    method: 'POST',
+    body: formBody({ email: 'missing@example.com', password: 'wrongpass' }),
+    headers: formHeaders(),
+  });
+
+  assert.equal(response.status, 401);
+  assert.equal(verifiedHashes.length, 1);
+  assert.equal(bcrypt.getRounds(verifiedHashes[0]), 10);
+  const body = await response.text();
+  assert.match(body, /Email atau kata sandi tidak valid/);
+  assert.doesNotMatch(body, /password_hash|wrongpass|missing@example.com/);
 });
 
 test('login starts a session, records the login time, and redirects to a safe local path', async (t) => {

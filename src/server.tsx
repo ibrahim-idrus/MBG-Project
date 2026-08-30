@@ -21,6 +21,7 @@ import { createDatabase } from './db/database.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
+const DUMMY_PASSWORD_HASH = '$2b$10$wWznOOkAOyiVJURj7HUEc.F9bnJNbH1efdOHvyTs6ev2x38l9TBrK';
 
 type FormBody = Record<string, string | File>;
 
@@ -49,7 +50,10 @@ function isDuplicateEmailError(error: unknown): boolean {
   return error instanceof Error && /UNIQUE constraint failed: admins\.email|idx_admins_email/i.test(error.message);
 }
 
-export function createApp(db: Database.Database = createDatabase()): Hono<AuthEnv> {
+export function createApp(
+  db: Database.Database = createDatabase(),
+  verifyPasswordFn: typeof verifyPassword = verifyPassword,
+): Hono<AuthEnv> {
   const app = new Hono<AuthEnv>();
 
   app.get('/', (c) => c.html(<LokasiPage />));
@@ -73,7 +77,10 @@ export function createApp(db: Database.Database = createDatabase()): Hono<AuthEn
       WHERE email = ?
       LIMIT 1
     `).get(validation.value.email) as { id: number; password_hash: string; status: string } | undefined;
-    const passwordMatches = await verifyPassword(validation.value.password, admin?.password_hash ?? '');
+    const passwordMatches = await verifyPasswordFn(
+      validation.value.password,
+      admin?.password_hash ?? DUMMY_PASSWORD_HASH,
+    );
 
     if (!admin || admin.status !== 'active' || !passwordMatches) {
       return c.html(<LoginPage error={GENERIC_LOGIN_ERROR} next={next ?? undefined} />, 401);
