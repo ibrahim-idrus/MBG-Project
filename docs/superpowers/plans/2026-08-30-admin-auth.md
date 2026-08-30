@@ -43,6 +43,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createDatabase } from '../../dist/db/database.js';
+import { runMigrations } from '../../dist/db/migrate.js';
 
 test('database enables foreign keys and exposes the auth session table after migrations', () => {
   const db = createDatabase(':memory:');
@@ -72,7 +73,7 @@ Expected: PASS and exit code 0.
 - [ ] **Step 5: Commit the database boundary**
 
 ```bash
-git add src/db/database.ts src/db/migrations/009_create_auth_sessions.sql src/db/migrate.ts package.json tests/helpers/database.test.mjs
+git add src/db/database.ts src/db/migrations/009_create_auth_sessions.sql src/db/migrate.ts package.json tests/helpers/database.test.mjs tests/helpers/test-database.mjs
 git commit -m "feat: add auth session database boundary"
 ```
 
