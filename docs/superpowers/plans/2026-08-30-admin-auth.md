@@ -267,6 +267,8 @@ git commit -m "feat: protect admin routes with session authorization"
 
 **Files:**
 - Modify: `src/db/migrate.ts` only if verification exposes an ordering/path issue.
+- Modify: `src/db/seed.ts` only to correct the existing cross-platform direct-entry guard if the seeded-app smoke check exposes it.
+- Modify: `src/index.ts` to run the existing migrations before starting the production listener.
 - Modify: `src/pages/auth/login.tsx` and `src/pages/auth/register.tsx` only for verified form/error rendering issues.
 - Create: `tests/auth/security-regressions.test.mjs` if a missing regression case is identified during implementation.
 
@@ -280,7 +282,7 @@ Expected: all auth service, route, authorization, and regression tests pass with
 
 Run: `npm run migrate; npm run seed; npm run build`
 
-Expected: migrations are idempotent, the existing seed account remains usable, and the build exits 0.
+Expected: migrations and seed commands execute on Windows, migrations are idempotent, the existing seed account remains usable, production startup applies pending migrations before listening, and the build exits 0.
 
 - [ ] **Step 3: Exercise the real HTTP flow**
 
