@@ -18,6 +18,10 @@ import { createSession, revokeSession } from './auth/session.js';
 import { requireAdmin, SESSION_COOKIE, type AuthEnv } from './auth/middleware.js';
 import { isSafeNextPath, validateLogin, validateRegistration } from './auth/validation.js';
 import { createDatabase } from './db/database.js';
+import { registerMenuRoutes } from './api/menus.js';
+import { registerFinanceRoutes } from './api/finance.js';
+import { registerAspirationRoutes } from './api/aspirations.js';
+import { registerMasterDataRoutes } from './api/master-data.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
@@ -166,6 +170,8 @@ export function createApp(
   const adminMiddleware = requireAdmin(db);
   app.use('/admin', adminMiddleware);
   app.use('/admin/*', adminMiddleware);
+  app.use('/api/admin', adminMiddleware);
+  app.use('/api/admin/*', adminMiddleware);
   app.get('/api/auth/me', adminMiddleware, (c) => c.json({ data: c.get('admin') }));
 
   app.get('/admin', (c) => c.html(<DashboardPage />));
@@ -174,6 +180,11 @@ export function createApp(
   app.get('/admin/menu', (c) => c.html(<MenuPage />));
   app.get('/admin/menu/tambah', (c) => c.html(<TambahMenuPage />));
   app.get('/admin/aspirasi', (c) => c.html(<AspirasiPage />));
+
+  registerMenuRoutes(app, db);
+  registerFinanceRoutes(app, db);
+  registerAspirationRoutes(app, db);
+  registerMasterDataRoutes(app, db);
 
   return app;
 }

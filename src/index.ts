@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url';
 import app from './server.js';
 import { runMigrations } from './db/migrate.js';
 
-const port = 3000;
+const port = Number(process.env.PORT ?? 3000);
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']);
 
 export function createFetchRequest(req: IncomingMessage, url: URL): Request {
