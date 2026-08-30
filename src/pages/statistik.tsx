@@ -1,62 +1,18 @@
 import type { FC } from 'hono/jsx';
 import { AdminLayout } from '../layouts/AdminLayout.js';
-import { StatCard } from '../components/StatCard.js';
+import { ClientScript } from '../components/ClientScript.js';
 
-export const StatistikPage: FC = () => {
-  return (
-    <AdminLayout title="Statistik Keuangan Tahunan" activePage="/admin/keuangan">
-      <div class="mb-8">
-        <h2 class="font-display-lg text-display-lg text-on-surface mb-2">Laporan Tahunan 2024</h2>
-        <p class="font-body-md text-body-md text-on-surface-variant">Ringkasan performa keuangan dan statistik tahunan.</p>
-      </div>
+const script = String.raw`
+(() => {
+  const year = document.getElementById('stats-year'); const monthly = document.getElementById('stats-monthly'); const categories = document.getElementById('stats-categories'); const top = document.getElementById('stats-top'); const message = document.getElementById('stats-message'); const money = (value) => new Intl.NumberFormat('id-ID').format(Number(value || 0)); const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  const api = async (url) => { const response = await fetch(url); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || 'Permintaan gagal.'); return data; };
+  const load = async () => { try { const result = (await api('/api/admin/finance/statistics?year='+year.value)).data; document.getElementById('stats-income').textContent = 'Rp '+money(result.summary.total_income); document.getElementById('stats-expense').textContent = 'Rp '+money(result.summary.total_expenses); document.getElementById('stats-balance').textContent = 'Rp '+money(result.summary.balance); monthly.innerHTML = result.monthly.map((item) => '<tr class="border-b border-surface-variant"><td class="p-3">'+item.month+'</td><td class="p-3 text-right text-tertiary">Rp '+money(item.income)+'</td><td class="p-3 text-right text-error">Rp '+money(item.expenses)+'</td></tr>').join(''); categories.innerHTML = result.expense_by_category.length ? result.expense_by_category.map((item) => '<li class="flex justify-between border-b border-surface-variant py-2"><span>'+esc(item.category)+'</span><strong>Rp '+money(item.total)+'</strong></li>').join('') : '<li>Belum ada data.</li>'; top.innerHTML = result.top_transactions.length ? result.top_transactions.map((item) => '<li class="flex justify-between gap-3 border-b border-surface-variant py-2"><span>'+esc(item.title)+'</span><strong class="text-error whitespace-nowrap">Rp '+money(item.amount)+'</strong></li>').join('') : '<li>Belum ada data.</li>'; message.hidden = true; } catch (error) { message.textContent = error.message; message.hidden = false; } };
+  year.addEventListener('change', load); load();
+})();
+`;
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard icon="trending_up" iconColor="text-tertiary" iconBg="bg-tertiary/10" label="Total Pemasukan Tahunan" value="Rp 12.450.000.000" />
-        <StatCard icon="trending_down" iconColor="text-error" iconBg="bg-error/10" label="Total Pengeluaran Tahunan" value="Rp 8.920.000.000" />
-        <StatCard icon="speed" iconColor="text-primary" iconBg="bg-primary/10" label="Efisiensi Anggaran" value="78.5%" />
-      </div>
-
-      <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div class="p-card-padding border-b border-surface-variant">
-          <h3 class="font-headline-sm text-headline-sm text-on-surface">Top 5 Transaksi Terbesar</h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-surface-container-low border-b border-surface-variant">
-                <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4">ID Transaksi</th>
-                <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4">Tanggal</th>
-                <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4">Deskripsi</th>
-                <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4">Kategori</th>
-                <th class="font-label-md text-label-md text-on-surface-variant py-3 px-4 text-right">Nominal (Rp)</th>
-              </tr>
-            </thead>
-            <tbody class="font-body-md text-body-md text-on-surface">
-              <tr class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors">
-                <td class="py-3 px-4 text-primary font-medium">TRX-9982</td>
-                <td class="py-3 px-4">12 Nov 2024</td>
-                <td class="py-3 px-4">Pengadaan Suplai Daging Q4</td>
-                <td class="py-3 px-4"><span class="bg-primary-container/20 text-primary px-2 py-1 rounded text-xs font-semibold">BAHAN MAKANAN</span></td>
-                <td class="py-3 px-4 text-right font-medium">450.000.000</td>
-              </tr>
-              <tr class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors">
-                <td class="py-3 px-4 text-primary font-medium">TRX-8741</td>
-                <td class="py-3 px-4">05 Okt 2024</td>
-                <td class="py-3 px-4">Perpanjangan Kontrak Armada Truk</td>
-                <td class="py-3 px-4"><span class="bg-secondary-container/20 text-secondary px-2 py-1 rounded text-xs font-semibold">LOGISTIK</span></td>
-                <td class="py-3 px-4 text-right font-medium">320.500.000</td>
-              </tr>
-              <tr class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors">
-                <td class="py-3 px-4 text-primary font-medium">TRX-7102</td>
-                <td class="py-3 px-4">22 Sep 2024</td>
-                <td class="py-3 px-4">Pembangunan Fasilitas Penyimpanan</td>
-                <td class="py-3 px-4"><span class="bg-tertiary-container/20 text-tertiary px-2 py-1 rounded text-xs font-semibold">OPERASIONAL</span></td>
-                <td class="py-3 px-4 text-right font-medium">275.000.000</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-};
+export const StatistikPage: FC = () => (
+  <AdminLayout title="Statistik Keuangan Tahunan" activePage="/admin/keuangan">
+    <div><div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8"><div><h2 class="font-display-lg text-display-lg text-on-surface">Statistik Keuangan</h2><p class="font-body-md text-body-md text-on-surface-variant">Ringkasan langsung dari transaksi tersimpan.</p></div><label>Tahun<input id="stats-year" type="number" min="1900" max="9999" value="2026" class="ml-2 border border-outline-variant rounded-lg px-3 py-2" /></label></div><div id="stats-message" hidden class="mb-4 rounded-lg bg-error-container text-on-error-container px-4 py-3"></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"><div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-sm"><p class="text-on-surface-variant">Total Pemasukan</p><h3 id="stats-income" class="font-display-lg text-display-lg text-tertiary">-</h3></div><div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-sm"><p class="text-on-surface-variant">Total Pengeluaran</p><h3 id="stats-expense" class="font-display-lg text-display-lg text-error">-</h3></div><div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-sm"><p class="text-on-surface-variant">Saldo</p><h3 id="stats-balance" class="font-display-lg text-display-lg text-primary">-</h3></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden"><h3 class="font-headline-md text-headline-md p-card-padding pb-3">Pemasukan & Pengeluaran Bulanan</h3><table class="w-full"><thead class="bg-surface-container-low"><tr><th class="p-3 text-left">Bulan</th><th class="p-3 text-right">Masuk</th><th class="p-3 text-right">Keluar</th></tr></thead><tbody id="stats-monthly"></tbody></table></section><section class="bg-surface-container-lowest rounded-xl shadow-sm p-card-padding"><h3 class="font-headline-md text-headline-md mb-4">Pengeluaran per Kategori</h3><ul id="stats-categories"></ul><h3 class="font-headline-md text-headline-md mt-8 mb-4">Transaksi Terbesar</h3><ul id="stats-top"></ul></section></div></div><ClientScript>{script}</ClientScript>
+  </AdminLayout>
+);

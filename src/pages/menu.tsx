@@ -1,104 +1,37 @@
 import type { FC } from 'hono/jsx';
 import { AdminLayout } from '../layouts/AdminLayout.js';
 import { Button } from '../components/Button.js';
+import { ClientScript } from '../components/ClientScript.js';
 
-interface DayMenu {
-  day: string;
-  grade: string;
-  gradeColor: string;
-  meals: { name: string }[];
-  calories: string;
-}
+const script = String.raw`
+(() => {
+  const form = document.getElementById('menu-form');
+  const modal = document.getElementById('menu-modal');
+  const rows = document.getElementById('menu-rows');
+  const message = document.getElementById('menu-message');
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.message || 'Permintaan gagal.'); return data; };
+  const notify = (text, error = false) => { message.textContent = text; message.className = error ? 'mb-4 rounded-lg bg-error-container text-on-error-container px-4 py-3' : 'mb-4 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed px-4 py-3'; message.hidden = !text; };
+  const setValue = (name, value) => { form.elements[name].value = value ?? ''; };
+  const loadOptions = async () => { const [kitchens, schools] = await Promise.all([api('/api/admin/kitchens?per_page=100'), api('/api/admin/schools?per_page=100')]); document.getElementById('menu-kitchen').insertAdjacentHTML('beforeend', kitchens.data.map((item) => '<option value="'+item.id+'">'+esc(item.name)+' ('+esc(item.code)+')</option>').join('')); document.getElementById('menu-school').insertAdjacentHTML('beforeend', schools.data.map((item) => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('')); };
+  const render = (items) => { rows.innerHTML = items.length ? items.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3">'+esc(item.menu_date)+'</td><td class="p-3"><div class="font-semibold">'+esc(item.name)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.kitchen?.name)+' · '+esc(item.school?.name)+'</div></td><td class="p-3">'+esc(item.meal_type)+'</td><td class="p-3 text-right">'+esc(item.calories ?? '-')+' kcal</td><td class="p-3 text-right"><button type="button" data-edit="'+item.id+'" class="text-primary mr-3">Edit</button><button type="button" data-delete="'+item.id+'" class="text-error">Hapus</button></td></tr>').join('') : '<tr><td colspan="5" class="p-8 text-center text-on-surface-variant">Belum ada menu.</td></tr>'; };
+  const load = async () => { try { const params = new URLSearchParams({ per_page: '100', sort: document.getElementById('menu-sort').value }); const search = document.getElementById('menu-search').value.trim(); const date = document.getElementById('menu-date-filter').value; const meal = document.getElementById('menu-meal-filter').value; if (search) params.set('search', search); if (date) params.set('date', date); if (meal) params.set('meal_type', meal); const result = await api('/api/admin/menus?'+params); render(result.data); notify(''); } catch (error) { notify(error.message, true); } };
+  const open = async (id) => { form.reset(); form.dataset.id = id || ''; document.getElementById('menu-modal-title').textContent = id ? 'Edit Menu' : 'Tambah Menu'; if (id) { const item = (await api('/api/admin/menus/'+id)).data; ['name','description','composition','photo_url','menu_date','meal_type','calories','protein','carbohydrates','fat','fiber'].forEach((key) => setValue(key, item[key])); setValue('kitchen_id', item.kitchen_id); setValue('school_id', item.school_id); } modal.classList.remove('hidden'); };
+  document.getElementById('menu-add').addEventListener('click', () => open()); document.getElementById('menu-close').addEventListener('click', () => modal.classList.add('hidden')); document.getElementById('menu-refresh').addEventListener('click', load); ['menu-date-filter','menu-meal-filter','menu-sort'].forEach((id) => document.getElementById(id).addEventListener('change', load)); document.getElementById('menu-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); load(); } });
+  rows.addEventListener('click', async (event) => { const button = event.target.closest('button'); if (!button) return; try { if (button.dataset.edit) return open(button.dataset.edit); if (button.dataset.delete && confirm('Hapus menu ini?')) { await api('/api/admin/menus/'+button.dataset.delete, { method: 'DELETE' }); notify('Menu berhasil dihapus.'); load(); } } catch (error) { notify(error.message, true); } });
+  form.addEventListener('submit', async (event) => { event.preventDefault(); const payload = Object.fromEntries(new FormData(form).entries()); ['calories','protein','carbohydrates','fat','fiber','kitchen_id','school_id'].forEach((key) => { if (payload[key] !== '') payload[key] = Number(payload[key]); }); try { const id = form.dataset.id; await api(id ? '/api/admin/menus/'+id : '/api/admin/menus', { method: id ? 'PATCH' : 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify(payload) }); modal.classList.add('hidden'); notify(id ? 'Menu berhasil diperbarui.' : 'Menu berhasil dibuat.'); load(); } catch (error) { notify(error.message, true); } });
+  loadOptions().then(load).catch((error) => notify(error.message, true)); if (new URLSearchParams(location.search).get('new') === '1') open();
+})();
+`;
 
-const weekDays: DayMenu[] = [
-  { day: 'Senin', grade: 'A', gradeColor: 'bg-green-100 text-green-700', meals: [{ name: 'Oatmeal with Berries & Almonds' }, { name: 'Grilled Chicken Salad' }, { name: 'Greek Yogurt' }], calories: '920 kcal' },
-  { day: 'Selasa', grade: 'B+', gradeColor: 'bg-green-100 text-green-700', meals: [{ name: 'Scrambled Eggs & Toast' }, { name: 'Beef Stir-fry with Rice' }, { name: 'Apple Slices & Peanut Butter' }], calories: '1200 kcal' },
-  { day: 'Rabu', grade: 'A', gradeColor: 'bg-green-100 text-green-700', meals: [], calories: '' },
-  { day: 'Kamis', grade: 'B', gradeColor: 'bg-yellow-100 text-yellow-700', meals: [], calories: '' },
-  { day: 'Jumat', grade: 'A-', gradeColor: 'bg-green-100 text-green-700', meals: [], calories: '' },
-  { day: 'Sabtu', grade: '-', gradeColor: 'bg-gray-100 text-gray-500', meals: [], calories: '' },
-  { day: 'Minggu', grade: '-', gradeColor: 'bg-gray-100 text-gray-500', meals: [], calories: '' },
-];
-
-export const MenuPage: FC = () => {
-  return (
-    <AdminLayout title="Menu & Gizi" activePage="/admin/menu">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div>
-          <h2 class="font-display-lg text-display-lg text-on-surface">Weekly Menu Schedule</h2>
-          <p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage and monitor nutritional values for the upcoming week.</p>
-        </div>
-        <Button variant="primary" shape="pill">
-          <span class="material-symbols-outlined text-[18px]">edit</span>
-          Edit Schedule
-        </Button>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)] col-span-1">
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-2">Weekly Nutrition Score</p>
-          <div class="flex items-end gap-2">
-            <span class="font-display-lg text-display-lg text-on-surface">A-</span>
-            <span class="text-green-600 font-label-md text-label-md flex items-center gap-1 mb-1">
-              <span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2%
-            </span>
-          </div>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">from last week</p>
-        </div>
-        <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)]">
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Avg Calories/Day</p>
-          <p class="font-headline-md text-headline-md text-on-surface">2,150</p>
-          <p class="font-body-sm text-body-sm text-outline">kcal</p>
-        </div>
-        <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)]">
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Avg Protein/Day</p>
-          <p class="font-headline-md text-headline-md text-on-surface">65</p>
-          <p class="font-body-sm text-body-sm text-outline">g</p>
-        </div>
-        <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)]">
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Avg Carbs/Day</p>
-          <p class="font-headline-md text-headline-md text-on-surface">280</p>
-          <p class="font-body-sm text-body-sm text-outline">g</p>
-        </div>
-        <div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)]">
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Avg Fats/Day</p>
-          <p class="font-headline-md text-headline-md text-on-surface">55</p>
-          <p class="font-body-sm text-body-sm text-outline">g</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {weekDays.map((day) => (
-          <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div class="p-4 border-b border-surface-variant flex justify-between items-center">
-              <p class="font-headline-sm text-headline-sm text-on-surface">{day.day}</p>
-              <span class={`px-2.5 py-1 rounded-full text-xs font-semibold ${day.gradeColor}`}>{day.grade}</span>
-            </div>
-            <div class="p-4">
-              {day.meals.length > 0 ? (
-                <div class="space-y-2">
-                  {day.meals.map((meal) => (
-                    <div class="flex items-center gap-2">
-                      <span class="material-symbols-outlined text-[16px] text-on-surface-variant">restaurant</span>
-                      <span class="font-body-sm text-body-sm text-on-surface">{meal.name}</span>
-                    </div>
-                  ))}
-                  <div class="mt-3 pt-3 border-t border-surface-variant">
-                    <span class="font-label-md text-label-md text-primary">{day.calories}</span>
-                  </div>
-                </div>
-              ) : (
-                <div class="flex flex-col items-center justify-center py-6 text-on-surface-variant">
-                  <span class="material-symbols-outlined text-3xl mb-2 opacity-50">no_meals</span>
-                  <p class="font-body-sm text-body-sm opacity-70">
-                    {day.day === 'Sabtu' || day.day === 'Minggu' ? 'Weekend off' : 'Menu details set'}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </AdminLayout>
-  );
-};
+export const MenuPage: FC = () => (
+  <AdminLayout title="Menu & Gizi" activePage="/admin/menu">
+    <div>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4"><div><h2 class="font-display-lg text-display-lg text-on-surface">Menu & Gizi</h2><p class="font-body-md text-body-md text-on-surface-variant mt-1">Kelola menu, komposisi, dan informasi gizi berdasarkan dapur dan sekolah.</p></div><Button variant="primary" shape="pill" type="button" onclick="document.getElementById('menu-add').click()"><span class="material-symbols-outlined text-[18px]">add</span>Tambah Menu</Button></div>
+      <div id="menu-message" hidden></div>
+      <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden"><div class="p-card-padding border-b border-surface-variant flex flex-col lg:flex-row gap-3 lg:items-center"><input id="menu-search" class="flex-1 border border-outline-variant rounded-lg px-3 py-2" placeholder="Cari nama menu..." aria-label="Cari nama menu" /><input id="menu-date-filter" type="date" class="border border-outline-variant rounded-lg px-3 py-2" aria-label="Filter tanggal" /><select id="menu-meal-filter" class="border border-outline-variant rounded-lg px-3 py-2"><option value="">Semua waktu makan</option><option value="breakfast">Sarapan</option><option value="lunch">Makan siang</option><option value="snack">Snack</option></select><select id="menu-sort" class="border border-outline-variant rounded-lg px-3 py-2"><option value="newest">Terbaru</option><option value="oldest">Terlama</option></select><Button variant="secondary" shape="rounded" type="button" onclick="document.getElementById('menu-refresh').click()">Muat ulang</Button></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-surface-container-low"><tr><th class="p-3">Tanggal</th><th class="p-3">Menu</th><th class="p-3">Waktu</th><th class="p-3 text-right">Kalori</th><th class="p-3 text-right">Aksi</th></tr></thead><tbody id="menu-rows"></tbody></table></div></div>
+      <button id="menu-add" type="button" hidden>add</button><button id="menu-refresh" type="button" hidden>refresh</button>
+      <div id="menu-modal" class="hidden fixed inset-0 z-30 bg-black/30 p-4 overflow-y-auto"><div class="bg-surface-card max-w-3xl mx-auto mt-10 rounded-xl p-6"><div class="flex justify-between items-center mb-5"><h3 id="menu-modal-title" class="font-headline-md text-headline-md">Tambah Menu</h3><button id="menu-close" type="button" class="text-2xl" aria-label="Tutup">×</button></div><form id="menu-form" class="grid grid-cols-1 md:grid-cols-2 gap-4"><label class="md:col-span-2">Nama Menu<input name="name" required class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label><label>Dapur<select id="menu-kitchen" name="kitchen_id" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="">Pilih dapur</option></select></label><label>Sekolah<select id="menu-school" name="school_id" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="">Pilih sekolah</option></select></label><label>Waktu makan<select name="meal_type" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="breakfast">Sarapan</option><option value="lunch">Makan siang</option><option value="snack">Snack</option></select></label><label>Tanggal<input name="menu_date" type="date" required class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label><label class="md:col-span-2">Deskripsi<textarea name="description" class="mt-1 w-full border border-outline-variant rounded-lg p-2"></textarea></label><label class="md:col-span-2">Komposisi<textarea name="composition" class="mt-1 w-full border border-outline-variant rounded-lg p-2"></textarea></label><label>Foto URL<input name="photo_url" class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label><div></div>{['calories','protein','carbohydrates','fat','fiber'].map((key) => <label>{key === 'carbohydrates' ? 'Karbohidrat' : key}<input name={key} type="number" min="0" step="0.01" class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label>)}<div class="md:col-span-2 flex justify-end gap-3 mt-3"><button type="button" onclick="document.getElementById('menu-close').click()" class="border border-primary text-primary rounded-lg px-5 py-2">Batal</button><button type="submit" class="bg-primary text-on-primary rounded-lg px-5 py-2">Simpan Menu</button></div></form></div></div>
+    </div><ClientScript>{script}</ClientScript>
+  </AdminLayout>
+);

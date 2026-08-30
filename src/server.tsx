@@ -4,7 +4,6 @@ import type Database from 'better-sqlite3';
 import { KeuanganPage } from './pages/keuangan.js';
 import { DashboardPage } from './pages/dashboard.js';
 import { MenuPage } from './pages/menu.js';
-import { TambahMenuPage } from './pages/tambah-menu.js';
 import { StatistikPage } from './pages/statistik.js';
 import { AspirasiPage } from './pages/aspirasi.js';
 import { LokasiPage } from './pages/user/lokasi.js';
@@ -22,6 +21,7 @@ import { registerMenuRoutes } from './api/menus.js';
 import { registerFinanceRoutes } from './api/finance.js';
 import { registerAspirationRoutes } from './api/aspirations.js';
 import { registerMasterDataRoutes } from './api/master-data.js';
+import { AdminLokasiPage } from './pages/admin-lokasi.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
@@ -178,8 +178,9 @@ export function createApp(
   app.get('/admin/keuangan', (c) => c.html(<KeuanganPage />));
   app.get('/admin/keuangan/statistik', (c) => c.html(<StatistikPage />));
   app.get('/admin/menu', (c) => c.html(<MenuPage />));
-  app.get('/admin/menu/tambah', (c) => c.html(<TambahMenuPage />));
+  app.get('/admin/menu/tambah', (c) => c.html(<MenuPage />));
   app.get('/admin/aspirasi', (c) => c.html(<AspirasiPage />));
+  app.get('/admin/lokasi', (c) => c.html(<AdminLokasiPage />));
 
   registerMenuRoutes(app, db);
   registerFinanceRoutes(app, db);
