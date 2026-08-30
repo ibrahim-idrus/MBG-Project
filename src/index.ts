@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { pathToFileURL } from 'node:url';
 import app from './server.js';
 import { runMigrations } from './db/migrate.js';
+import { ensureDummyMasterData } from './db/dummy-master-data.js';
 
 const port = Number(process.env.PORT ?? 3000);
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']);
@@ -49,6 +50,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   runMigrations();
+  if (!process.env.DATABASE_PATH) ensureDummyMasterData();
   server.listen(port, () => {
     console.log(`MBG Transparansi running on http://localhost:${port}`);
   });

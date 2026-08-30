@@ -26,7 +26,7 @@ const script = String.raw`
     if (!result.data.length) {
       const setup = document.createElement('div');
       setup.className = 'md:col-span-2 rounded-lg bg-surface-container-low p-4 text-sm';
-      setup.innerHTML = 'Belum ada dapur. Tambahkan dapur sebelum mencatat transaksi. <a href="/admin/lokasi" class="text-primary underline font-semibold">Kelola dapur dan sekolah</a>';
+      setup.innerHTML = 'Data referensi dapur BGN belum tersedia. <a href="/admin/lokasi" class="text-primary underline font-semibold">Lihat dapur dan sekolah</a>';
       form.prepend(setup);
       const submit = form.querySelector('button[type="submit"]');
       submit.disabled = true;

@@ -8,6 +8,10 @@ import { createFetchRequest } from '../../dist/index.js';
 // Run against an isolated in-memory database; never changes the live database.
 const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE).href);
 const { app, db, sessionCookie } = createTestAppWithSession();
+const kitchen = db.prepare('INSERT INTO mbg_kitchens (name, code, address, village, district, city, province, postal_code, capacity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('Dummy Kitchen', 'DUMMY-001', 'Test Street', 'Village', 'District', 'City', 'Province', '12345', 100);
+const kitchenId = Number(kitchen.lastInsertRowid);
+const school = db.prepare('INSERT INTO schools (kitchen_id, name, npsn, address, village, district, city, province, postal_code, student_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(kitchenId, 'Dummy School', '10000001', 'School Street', 'Village', 'District', 'City', 'Province', '12345', 25);
+const schoolId = Number(school.lastInsertRowid);
 const server = createServer(async (req, res) => {
   const response = await app.fetch(createFetchRequest(req, new URL(req.url, 'http://127.0.0.1')));
   res.writeHead(response.status, Object.fromEntries(response.headers));
@@ -45,38 +49,19 @@ try {
   await page.getByRole('button', { name: 'Tambah Menu' }).click();
   assert.equal(await page.locator('#menu-modal').isVisible(), true);
   console.log('Menu add button opens the form. Kitchen option count:', await page.locator('#menu-kitchen option').count());
-  await page.locator('#menu-modal').getByRole('link', { name: 'Kelola dapur dan sekolah' }).waitFor();
-  assert.equal(await page.locator('#menu-form button[type=submit]').isDisabled(), true);
-  if (process.env.CRUD_SCREENSHOTS) await page.screenshot({ path: join(process.env.CRUD_SCREENSHOTS, 'crud-empty-setup.png'), fullPage: true });
-  await page.goto(`${origin}/admin/keuangan`);
-  await page.getByRole('button', { name: 'Tambah Transaksi' }).click();
-  await page.locator('#finance-modal').getByRole('link', { name: 'Kelola dapur dan sekolah' }).waitFor();
-  assert.equal(await page.locator('#finance-form button[type=submit]').isDisabled(), true);
   await page.goto(`${origin}/admin/lokasi`);
-  const address = { address: 'Test Street', village: 'Village', district: 'District', city: 'City', province: 'Province', postal_code: '12345' };
-  await fill('kitchen-form', { name: 'Browser Kitchen', code: 'BROWSER', ...address, capacity: '100' });
-  await save('kitchen-form', 'POST', '/api/admin/kitchens');
-  await page.locator('#kitchen-rows').getByText('Browser Kitchen', { exact: true }).waitFor();
-  await page.locator('#kitchen-rows').getByRole('button', { name: 'Edit', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#kitchen-form [name=name]').value === 'Browser Kitchen');
-  await fill('kitchen-form', { name: 'Browser Kitchen Updated' });
-  await save('kitchen-form', 'PATCH', '/api/admin/kitchens/1');
-  await page.locator('#kitchen-rows').getByText('Browser Kitchen Updated', { exact: true }).waitFor();
-  await fill('school-form', { name: 'Browser School', npsn: '10000001', ...address, student_count: '25' });
-  await page.locator('#school-kitchen').selectOption('1');
-  await save('school-form', 'POST', '/api/admin/schools');
-  await page.locator('#school-rows').getByText('Browser School', { exact: true }).waitFor();
-  await page.locator('#school-rows').getByRole('button', { name: 'Edit', exact: true }).click();
-  await page.waitForFunction(() => document.querySelector('#school-form [name=name]').value === 'Browser School');
-  await fill('school-form', { name: 'Browser School Updated' });
-  await save('school-form', 'PATCH', '/api/admin/schools/1');
-  console.log('Kitchen and school create/edit passed through visible forms.');
+  await page.locator('#kitchen-rows').getByText('Dummy Kitchen', { exact: true }).waitFor();
+  await page.locator('#school-rows').getByText('Dummy School', { exact: true }).waitFor();
+  assert.equal(await page.locator('form').count(), 1);
+  assert.equal(await page.getByRole('button', { name: 'Edit', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: 'Hapus', exact: true }).count(), 0);
+  console.log('Dapur and school data is read-only and loaded from the dummy API source.');
 
   await page.goto(`${origin}/admin/menu`);
   await page.getByRole('button', { name: 'Tambah Menu' }).click();
   await fill('menu-form', { name: 'Browser Lunch', menu_date: '2026-08-30', calories: '500' });
-  await page.locator('#menu-kitchen').selectOption('1');
-  await page.locator('#menu-school').selectOption('1');
+  await page.locator('#menu-kitchen').selectOption(String(kitchenId));
+  await page.locator('#menu-school').selectOption(String(schoolId));
   await fill('menu-form', { name: '   ' });
   const rejected = page.waitForResponse(r => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/admin/menus');
   await page.locator('#menu-form button[type=submit]').click();
@@ -104,7 +89,7 @@ try {
   await page.goto(`${origin}/admin/keuangan`);
   await page.getByRole('button', { name: 'Tambah Transaksi' }).click();
   await fill('finance-form', { title: 'Browser Purchase', category: 'Ingredients', amount: '1000', transaction_date: '2026-08-30' });
-  await page.locator('#finance-kitchen').selectOption('1');
+  await page.locator('#finance-kitchen').selectOption(String(kitchenId));
   await save('finance-form', 'POST', '/api/admin/finance/transactions');
   await page.locator('#finance-rows').getByText('Browser Purchase', { exact: true }).waitFor();
   await page.locator('#finance-rows').getByRole('button', { name: 'Edit', exact: true }).click();
@@ -139,15 +124,15 @@ try {
   await save('aspiration-form', 'PATCH', '/api/admin/aspirations/1');
   assert.equal(db.prepare('SELECT admin_response FROM aspirations WHERE id = 1').get().admin_response, 'We have updated the menu.');
   console.log('Aspiration status-only update and response passed through the browser.');
-  for (const [path, rows] of [['/admin/menu', 'menu-rows'], ['/admin/keuangan', 'finance-rows'], ['/admin/lokasi', 'school-rows'], ['/admin/lokasi', 'kitchen-rows']]) {
+  for (const [path, rows] of [['/admin/menu', 'menu-rows'], ['/admin/keuangan', 'finance-rows']]) {
     await page.goto(origin + path);
     await page.locator(`#${rows}`).getByRole('button', { name: 'Hapus', exact: true }).click();
     await page.waitForFunction(id => !document.querySelector(`#${id} button`), rows);
   }
   assert.equal(db.prepare('SELECT COUNT(*) AS count FROM menus').get().count, 0);
   assert.equal(db.prepare('SELECT COUNT(*) AS count FROM financial_transactions').get().count, 0);
-  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM schools').get().count, 0);
-  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM mbg_kitchens').get().count, 0);
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM schools').get().count, 1);
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM mbg_kitchens').get().count, 1);
   assert.deepEqual(errors, []);
   console.log('All four delete flows passed; no browser script errors.');
 } finally {

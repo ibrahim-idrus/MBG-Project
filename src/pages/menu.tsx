@@ -35,9 +35,9 @@ const script = String.raw`
     schoolSelect.innerHTML = '<option value="">Pilih sekolah</option>' + matching.map(item => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('');
     schoolSelect.value = String(selected);
     schoolSelect.disabled = !kitchenSelect.value || matching.length === 0;
-    const missing = kitchens.length === 0 ? 'Belum ada dapur. Tambahkan dapur dan sekolah terlebih dahulu.' : schools.length === 0 ? 'Belum ada sekolah. Tambahkan sekolah ke dapur terlebih dahulu.' : kitchenSelect.value && matching.length === 0 ? 'Dapur ini belum memiliki sekolah. Tambahkan sekolah atau pilih dapur lain.' : '';
+    const missing = kitchens.length === 0 ? 'Data referensi dapur BGN belum tersedia.' : schools.length === 0 ? 'Data referensi sekolah BGN belum tersedia.' : kitchenSelect.value && matching.length === 0 ? 'Dapur ini belum memiliki sekolah pada data referensi BGN.' : '';
     setup.hidden = !missing;
-    setup.innerHTML = esc(missing)+' <a href="/admin/lokasi" class="text-primary underline font-semibold">Kelola dapur dan sekolah</a>';
+    setup.innerHTML = esc(missing)+' <a href="/admin/lokasi" class="text-primary underline font-semibold">Lihat dapur dan sekolah</a>';
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = Boolean(missing);
     submit.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
