@@ -1,7 +1,11 @@
 import type { FC } from 'hono/jsx';
 import { getTailwindConfig } from '../../config/tailwind.js';
 
-export const RegisterPage: FC = () => {
+interface RegisterPageProps {
+  error?: string;
+}
+
+export const RegisterPage: FC<RegisterPageProps> = ({ error }) => {
   const tailwindConfig = getTailwindConfig();
 
   return (
@@ -50,7 +54,8 @@ export const RegisterPage: FC = () => {
               <div class="h-1.5 w-8 rounded-full bg-surface-variant"></div>
             </div>
 
-            <form action="#" method="post" class="space-y-form-stack">
+            <form action="/register" method="post" class="space-y-form-stack">
+              {error ? <div role="alert" aria-live="polite" class="rounded-lg bg-error-container px-4 py-3 font-body-md text-body-md text-on-error-container">{error}</div> : null}
               <div>
                 <label class="block font-label-lg text-label-lg text-on-surface mb-1.5" for="fullname">Nama Lengkap</label>
                 <div class="relative">

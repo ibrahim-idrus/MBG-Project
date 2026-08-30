@@ -1,7 +1,12 @@
 import type { FC } from 'hono/jsx';
 import { getTailwindConfig } from '../../config/tailwind.js';
 
-export const LoginPage: FC = () => {
+interface LoginPageProps {
+  error?: string;
+  next?: string;
+}
+
+export const LoginPage: FC<LoginPageProps> = ({ error, next }) => {
   const tailwindConfig = getTailwindConfig();
 
   return (
@@ -39,7 +44,9 @@ export const LoginPage: FC = () => {
               <p class="font-body-lg text-body-lg text-on-surface-muted">Selamat Datang Kembali</p>
             </div>
 
-            <form action="#" method="post" class="flex flex-col gap-form-stack w-full">
+            <form action="/login" method="post" class="flex flex-col gap-form-stack w-full">
+              {error ? <div role="alert" aria-live="polite" class="rounded-lg bg-error-container px-4 py-3 font-body-md text-body-md text-on-error-container">{error}</div> : null}
+              {next ? <input type="hidden" name="next" value={next} /> : null}
               <div class="flex flex-col gap-2">
                 <label class="font-label-lg text-label-lg text-on-surface" for="email">Email</label>
                 <div class="relative flex items-center border border-border-subtle rounded-lg bg-surface-card input-focus transition-all duration-200">
