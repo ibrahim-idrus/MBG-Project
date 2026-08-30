@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import app from './server.js';
+import { runMigrations } from './db/migrate.js';
 
 const port = 3000;
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']);
@@ -47,6 +48,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 });
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  runMigrations();
   server.listen(port, () => {
     console.log(`MBG Transparansi running on http://localhost:${port}`);
   });

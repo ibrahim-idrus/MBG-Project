@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import type Database from 'better-sqlite3';
 import { createDatabase } from './database.js';
 
@@ -68,6 +68,6 @@ export function runMigrations(db?: Database.Database): void {
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   runMigrations();
 }
