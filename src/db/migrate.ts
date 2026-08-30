@@ -40,6 +40,10 @@ export function runMigrations(): void {
     '006_create_schools.sql',
     '007_alter_financial_transactions.sql',
     '008_alter_menus.sql',
+    '009_add_slhs_to_mbg_kitchens.sql',
+    '010_create_food_items.sql',
+    '011_create_menu_compositions.sql',
+    '012_remove_nutrition_from_menus.sql',
   ];
   
   // Run pending migrations

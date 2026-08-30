@@ -16,26 +16,26 @@ const POSTAL_CODE = '76116';
 
 // Kitchen data - 20 MBG kitchens/offices
 const kitchenData = [
-  { name: 'Dapur MBG Gunung Samarinda 01', code: 'BPP-001', address: 'Jl. Gunung Samarinda Raya No. 10', capacity: 3000 },
-  { name: 'Dapur MBG Gunung Samarinda 02', code: 'BPP-002', address: 'Jl. Gunung Samarinda Raya No. 25', capacity: 2800 },
-  { name: 'Dapur MBG Gunung Samarinda 03', code: 'BPP-003', address: 'Jl. Gunung Samarinda Dalam No. 5', capacity: 2500 },
-  { name: 'Dapur MBG Gunung Samarinda 04', code: 'BPP-004', address: 'Jl. Gunung Samarinda Dalam No. 18', capacity: 3200 },
-  { name: 'Dapur MBG Gunung Samarinda 05', code: 'BPP-005', address: 'Jl. Gunung Samarinda Raya No. 42', capacity: 2700 },
-  { name: 'Kantor MBG Balikpapan Utara 01', code: 'BPP-006', address: 'Jl. Gunung Samarinda Raya No. 88', capacity: 1500 },
-  { name: 'Kantor MBG Balikpapan Utara 02', code: 'BPP-007', address: 'Jl. Gunung Samarinda Raya No. 105', capacity: 1800 },
-  { name: 'Dapur MBG Perumahan Samarinda 01', code: 'BPP-008', address: 'Jl. Perumahan Gunung Samarinda Blok A No. 3', capacity: 2200 },
-  { name: 'Dapur MBG Perumahan Samarinda 02', code: 'BPP-009', address: 'Jl. Perumahan Gunung Samarinda Blok C No. 7', capacity: 2400 },
-  { name: 'Dapur MBG Samarinda Indah 01', code: 'BPP-010', address: 'Jl. Samarinda Indah No. 12', capacity: 2600 },
-  { name: 'Dapur MBG Samarinda Indah 02', code: 'BPP-011', address: 'Jl. Samarinda Indah No. 28', capacity: 2100 },
-  { name: 'Kantor MBG Samarinda Sejahtera', code: 'BPP-012', address: 'Jl. Samarinda Sejahtera No. 5', capacity: 1600 },
-  { name: 'Dapur MBG Samarinda Makmur 01', code: 'BPP-013', address: 'Jl. Samarinda Makmur No. 15', capacity: 2900 },
-  { name: 'Dapur MBG Samarinda Makmur 02', code: 'BPP-014', address: 'Jl. Samarinda Makmur No. 33', capacity: 2300 },
-  { name: 'Dapur MBG Samarinda Baru 01', code: 'BPP-015', address: 'Jl. Samarinda Baru No. 8', capacity: 3100 },
-  { name: 'Dapur MBG Samarinda Baru 02', code: 'BPP-016', address: 'Jl. Samarinda Baru No. 22', capacity: 2000 },
-  { name: 'Kantor MBG Samarinda Permai', code: 'BPP-017', address: 'Jl. Samarinda Permai No. 10', capacity: 1700 },
-  { name: 'Dapur MBG Samarinda Jaya 01', code: 'BPP-018', address: 'Jl. Samarinda Jaya No. 6', capacity: 2800 },
-  { name: 'Dapur MBG Samarinda Jaya 02', code: 'BPP-019', address: 'Jl. Samarinda Jaya No. 19', capacity: 2500 },
-  { name: 'Dapur MBG Samarinda Sentosa', code: 'BPP-020', address: 'Jl. Samarinda Sentosa No. 14', capacity: 2700 },
+  { name: 'Dapur MBG Gunung Samarinda 01', code: 'BPP-001', address: 'Jl. Gunung Samarinda Raya No. 10', capacity: 3000, slhs: true },
+  { name: 'Dapur MBG Gunung Samarinda 02', code: 'BPP-002', address: 'Jl. Gunung Samarinda Raya No. 25', capacity: 2800, slhs: true },
+  { name: 'Dapur MBG Gunung Samarinda 03', code: 'BPP-003', address: 'Jl. Gunung Samarinda Dalam No. 5', capacity: 2500, slhs: false },
+  { name: 'Dapur MBG Gunung Samarinda 04', code: 'BPP-004', address: 'Jl. Gunung Samarinda Dalam No. 18', capacity: 3200, slhs: true },
+  { name: 'Dapur MBG Gunung Samarinda 05', code: 'BPP-005', address: 'Jl. Gunung Samarinda Raya No. 42', capacity: 2700, slhs: false },
+  { name: 'Kantor MBG Balikpapan Utara 01', code: 'BPP-006', address: 'Jl. Gunung Samarinda Raya No. 88', capacity: 1500, slhs: true },
+  { name: 'Kantor MBG Balikpapan Utara 02', code: 'BPP-007', address: 'Jl. Gunung Samarinda Raya No. 105', capacity: 1800, slhs: false },
+  { name: 'Dapur MBG Perumahan Samarinda 01', code: 'BPP-008', address: 'Jl. Perumahan Gunung Samarinda Blok A No. 3', capacity: 2200, slhs: true },
+  { name: 'Dapur MBG Perumahan Samarinda 02', code: 'BPP-009', address: 'Jl. Perumahan Gunung Samarinda Blok C No. 7', capacity: 2400, slhs: true },
+  { name: 'Dapur MBG Samarinda Indah 01', code: 'BPP-010', address: 'Jl. Samarinda Indah No. 12', capacity: 2600, slhs: false },
+  { name: 'Dapur MBG Samarinda Indah 02', code: 'BPP-011', address: 'Jl. Samarinda Indah No. 28', capacity: 2100, slhs: true },
+  { name: 'Kantor MBG Samarinda Sejahtera', code: 'BPP-012', address: 'Jl. Samarinda Sejahtera No. 5', capacity: 1600, slhs: false },
+  { name: 'Dapur MBG Samarinda Makmur 01', code: 'BPP-013', address: 'Jl. Samarinda Makmur No. 15', capacity: 2900, slhs: true },
+  { name: 'Dapur MBG Samarinda Makmur 02', code: 'BPP-014', address: 'Jl. Samarinda Makmur No. 33', capacity: 2300, slhs: false },
+  { name: 'Dapur MBG Samarinda Baru 01', code: 'BPP-015', address: 'Jl. Samarinda Baru No. 8', capacity: 3100, slhs: true },
+  { name: 'Dapur MBG Samarinda Baru 02', code: 'BPP-016', address: 'Jl. Samarinda Baru No. 22', capacity: 2000, slhs: true },
+  { name: 'Kantor MBG Samarinda Permai', code: 'BPP-017', address: 'Jl. Samarinda Permai No. 10', capacity: 1700, slhs: false },
+  { name: 'Dapur MBG Samarinda Jaya 01', code: 'BPP-018', address: 'Jl. Samarinda Jaya No. 6', capacity: 2800, slhs: true },
+  { name: 'Dapur MBG Samarinda Jaya 02', code: 'BPP-019', address: 'Jl. Samarinda Jaya No. 19', capacity: 2500, slhs: false },
+  { name: 'Dapur MBG Samarinda Sentosa', code: 'BPP-020', address: 'Jl. Samarinda Sentosa No. 14', capacity: 2700, slhs: true },
 ];
 
 // School data - 20 schools
@@ -73,12 +73,12 @@ export function seedKitchensAndSchools(): void {
   if (kitchenCount.count === 0) {
     console.log('Seeding kitchen data...');
     const insertKitchen = db.prepare(`
-      INSERT INTO mbg_kitchens (name, code, address, village, district, city, province, postal_code, capacity, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+      INSERT INTO mbg_kitchens (name, code, address, village, district, city, province, postal_code, capacity, status, slhs)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
     `);
 
     for (const kitchen of kitchenData) {
-      insertKitchen.run(kitchen.name, kitchen.code, kitchen.address, VILLAGE, DISTRICT, CITY, PROVINCE, POSTAL_CODE, kitchen.capacity);
+      insertKitchen.run(kitchen.name, kitchen.code, kitchen.address, VILLAGE, DISTRICT, CITY, PROVINCE, POSTAL_CODE, kitchen.capacity, kitchen.slhs ? 1 : 0);
     }
 
     console.log(`✓ ${kitchenData.length} kitchens seeded`);
