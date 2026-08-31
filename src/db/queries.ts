@@ -93,7 +93,7 @@ export function getMenuStats() {
 
 export function getMenusByDate(date: string) {
   return db().prepare(`
-    SELECT m.id, m.name, m.meal_type, m.description, m.photo_url,
+    SELECT m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date,
            k.name as kitchen_name, s.name as school_name,
            COALESCE(SUM(mc.calories), 0) as total_calories,
            COALESCE(SUM(mc.protein), 0) as total_protein,
@@ -105,13 +105,54 @@ export function getMenusByDate(date: string) {
     LEFT JOIN schools s ON m.school_id = s.id
     LEFT JOIN menu_compositions mc ON m.id = mc.menu_id
     WHERE m.menu_date = ?
-    GROUP BY m.id, m.name, m.meal_type, m.description, m.photo_url, k.name, s.name
+    GROUP BY m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date, k.name, s.name
     ORDER BY m.meal_type
   `).all(date);
 }
 
-export function getMenuCompositions(menuId: number) {
+export function getMenusByWeek(startDate: string, endDate: string) {
   return db().prepare(`
+    SELECT m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date,
+           m.kitchen_id, m.school_id,
+           k.name as kitchen_name, k.code as kitchen_code,
+           s.name as school_name,
+           COALESCE(SUM(mc.calories), 0) as total_calories,
+           COALESCE(SUM(mc.protein), 0) as total_protein,
+           COALESCE(SUM(mc.carbohydrates), 0) as total_carbohydrates,
+           COALESCE(SUM(mc.fat), 0) as total_fat,
+           COALESCE(SUM(mc.fiber), 0) as total_fiber
+    FROM menus m
+    LEFT JOIN mbg_kitchens k ON m.kitchen_id = k.id
+    LEFT JOIN schools s ON m.school_id = s.id
+    LEFT JOIN menu_compositions mc ON m.id = mc.menu_id
+    WHERE m.menu_date >= ? AND m.menu_date <= ?
+    GROUP BY m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date, m.kitchen_id, m.school_id, k.name, k.code, s.name
+    ORDER BY m.menu_date, CASE m.meal_type WHEN 'breakfast' THEN 1 WHEN 'lunch' THEN 2 WHEN 'snack' THEN 3 END
+  `).all(startDate, endDate);
+}
+
+export function getMenuDetail(menuId: number) {
+  return db().prepare(`
+    SELECT m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date,
+           m.kitchen_id, m.school_id,
+           k.name as kitchen_name,
+           s.name as school_name,
+           COALESCE(SUM(mc.calories), 0) as total_calories,
+           COALESCE(SUM(mc.protein), 0) as total_protein,
+           COALESCE(SUM(mc.carbohydrates), 0) as total_carbohydrates,
+           COALESCE(SUM(mc.fat), 0) as total_fat,
+           COALESCE(SUM(mc.fiber), 0) as total_fiber
+    FROM menus m
+    LEFT JOIN mbg_kitchens k ON m.kitchen_id = k.id
+    LEFT JOIN schools s ON m.school_id = s.id
+    LEFT JOIN menu_compositions mc ON m.id = mc.menu_id
+    WHERE m.id = ?
+    GROUP BY m.id
+  `).get(menuId);
+}
+
+export function getMenuCompositions(menuId: number, database?: Database.Database) {
+  return (database ?? db()).prepare(`
     SELECT mc.id, mc.amount, mc.unit, mc.calories, mc.protein, mc.carbohydrates, mc.fat, mc.fiber,
            fi.name as food_item_name, fi.default_unit
     FROM menu_compositions mc

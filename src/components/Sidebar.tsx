@@ -15,6 +15,7 @@ const adminNavItems: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/admin' },
   { icon: 'payments', label: 'Keuangan', href: '/admin/keuangan' },
   { icon: 'restaurant', label: 'Menu & Gizi', href: '/admin/menu' },
+  { icon: 'set_meal', label: 'Bahan Makanan', href: '/admin/food-items' },
   { icon: 'assessment', label: 'Laporan', href: '/admin/aspirasi' },
   { icon: 'location_on', label: 'Dapur & Sekolah', href: '/admin/lokasi' },
 ];

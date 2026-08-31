@@ -146,17 +146,6 @@ export const KeuanganUserPage: FC = () => {
                 <p class="font-label-md text-label-md text-on-surface-variant mb-1">Judul</p>
                 <p id="tx-title" class="font-body-md text-body-md font-medium"></p>
               </div>
-              <div>
-                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Deskripsi</p>
-                <div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
-                  <p id="tx-description" class="font-body-md text-body-md text-on-surface"></p>
-                </div>
-              </div>
-              <div>
-                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Dapur MBG</p>
-                <p id="tx-kitchen" class="font-body-md text-body-md font-medium"></p>
-                <p id="tx-kitchen-location" class="font-body-sm text-body-sm text-on-surface-variant"></p>
-              </div>
               <div id="tx-document-section" class="hidden">
                 <p class="font-label-md text-label-md text-on-surface-variant mb-2">Bukti/Dokumen Transaksi</p>
                 <div id="tx-doc-viewer" class="border border-outline-variant rounded-xl overflow-hidden bg-surface-container mb-3 hidden"></div>
@@ -174,6 +163,17 @@ export const KeuanganUserPage: FC = () => {
                     </a>
                   </div>
                 </div>
+              </div>
+              <div>
+                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Deskripsi</p>
+                <div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
+                  <p id="tx-description" class="font-body-md text-body-md text-on-surface"></p>
+                </div>
+              </div>
+              <div>
+                <p class="font-label-md text-label-md text-on-surface-variant mb-1">Dapur MBG</p>
+                <p id="tx-kitchen" class="font-body-md text-body-md font-medium"></p>
+                <p id="tx-kitchen-location" class="font-body-sm text-body-sm text-on-surface-variant"></p>
               </div>
             </div>
           </div>

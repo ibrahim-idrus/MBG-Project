@@ -142,15 +142,9 @@ export function seedFoodItems(): void {
       const foodItem = db.prepare('SELECT id, calories_per_100g, protein_per_100g, carbohydrates_per_100g, fat_per_100g, fiber_per_100g FROM food_items WHERE name = ?').get(comp.food_name) as any;
       
       if (menu && foodItem) {
-        // Calculate nutrition based on amount
-        const factor = comp.amount / 100;
-        const calories = Math.round(foodItem.calories_per_100g * factor * 100) / 100;
-        const protein = Math.round(foodItem.protein_per_100g * factor * 100) / 100;
-        const carbohydrates = Math.round(foodItem.carbohydrates_per_100g * factor * 100) / 100;
-        const fat = Math.round(foodItem.fat_per_100g * factor * 100) / 100;
-        const fiber = Math.round(foodItem.fiber_per_100g * factor * 100) / 100;
-        
-        insertComposition.run(menu.id, foodItem.id, comp.amount, comp.unit, calories, protein, carbohydrates, fat, fiber);
+        insertComposition.run(menu.id, foodItem.id, comp.amount, comp.unit,
+          foodItem.calories_per_100g, foodItem.protein_per_100g,
+          foodItem.carbohydrates_per_100g, foodItem.fat_per_100g, foodItem.fiber_per_100g);
       }
     }
     

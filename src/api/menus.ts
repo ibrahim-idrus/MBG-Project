@@ -2,10 +2,36 @@ import type Database from 'better-sqlite3';
 import { Hono } from 'hono';
 import type { AuthEnv } from '../auth/middleware.js';
 import { decimalValue, hasOwn, integerValue, likePattern, pagination, paginationResponse, pathId, readJson, requiredText, validDate, validationResponse, type JsonObject } from './common.js';
+import { getMenusByDate, getMenuDetail, getMenuCompositions, getMenusByWeek } from '../db/queries.js';
+
+// Public menu API (user-facing, READ-only)
+const publicMenus = new Hono();
+
+publicMenus.get('/menus', (c) => {
+  const date = c.req.query('date');
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return c.json({ error: 'Parameter date (YYYY-MM-DD) wajib diisi.' }, 400);
+  }
+  const menus = getMenusByDate(date);
+  return c.json({ data: menus });
+});
+
+publicMenus.get('/menus/:id', (c) => {
+  const id = Number(c.req.param('id'));
+  if (!id || !Number.isInteger(id) || id <= 0) {
+    return c.json({ error: 'ID menu tidak valid.' }, 400);
+  }
+  const menu = getMenuDetail(id) as any;
+  if (!menu) {
+    return c.json({ error: 'Menu tidak ditemukan.' }, 404);
+  }
+  const compositions = getMenuCompositions(id);
+  return c.json({ data: { ...menu, compositions } });
+});
+
+export default publicMenus;
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'snack'] as const;
-const NUTRIENTS = ['calories', 'protein', 'carbohydrates', 'fat', 'fiber'] as const;
-type Nutrient = typeof NUTRIENTS[number];
 
 function menuView(row: any) {
   return {
@@ -16,13 +42,7 @@ function menuView(row: any) {
     meal_type: row.meal_type,
     menu_date: row.menu_date,
     description: row.description,
-    composition: row.composition,
     photo_url: row.photo_url,
-    calories: row.calories,
-    protein: row.protein,
-    carbohydrates: row.carbohydrates,
-    fat: row.fat,
-    fiber: row.fiber,
     created_by: row.created_by,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -45,6 +65,18 @@ function loadMenu(db: Database.Database, id: number) {
   `).get(id) as any;
 }
 
+function loadMenuNutrition(db: Database.Database, menuId: number) {
+  return db.prepare(`
+    SELECT COALESCE(SUM(mc.calories), 0) as total_calories,
+           COALESCE(SUM(mc.protein), 0) as total_protein,
+           COALESCE(SUM(mc.carbohydrates), 0) as total_carbohydrates,
+           COALESCE(SUM(mc.fat), 0) as total_fat,
+           COALESCE(SUM(mc.fiber), 0) as total_fiber
+    FROM menu_compositions mc
+    WHERE mc.menu_id = ?
+  `).get(menuId) as any;
+}
+
 function menuPayload(body: JsonObject, current?: any) {
   const errors: Record<string, string> = {};
   const value = (key: string) => hasOwn(body, key) ? body[key] : current?.[key];
@@ -59,18 +91,6 @@ function menuPayload(body: JsonObject, current?: any) {
   if (!mealType || !MEAL_TYPES.includes(mealType as any)) errors.meal_type = 'Jenis makan tidak valid.';
   if (!menuDate) errors.menu_date = 'Tanggal menu tidak valid.';
 
-  const nutrition: Record<string, number | null> = {};
-  for (const nutrient of NUTRIENTS) {
-    const raw = value(nutrient);
-    if (raw === null || raw === undefined || raw === '') {
-      nutrition[nutrient] = null;
-    } else {
-      const parsed = decimalValue(raw);
-      if (parsed === null || parsed < 0) errors[nutrient] = 'Nilai gizi harus berupa angka nol atau lebih.';
-      else nutrition[nutrient] = parsed;
-    }
-  }
-
   if (Object.keys(errors).length) return { errors };
   return {
     value: {
@@ -80,15 +100,49 @@ function menuPayload(body: JsonObject, current?: any) {
       mealType: mealType as string,
       menuDate: menuDate as string,
       description: hasOwn(body, 'description') ? body.description === null ? null : String(body.description).trim() || null : current?.description ?? null,
-      composition: hasOwn(body, 'composition') ? body.composition === null ? null : String(body.composition).trim() || null : current?.composition ?? null,
       photoUrl: hasOwn(body, 'photo_url') ? body.photo_url === null ? null : String(body.photo_url).trim() || null : current?.photo_url ?? null,
-      nutrition,
     },
   };
 }
 
 function validRelationship(db: Database.Database, kitchenId: number, schoolId: number): boolean {
   return Boolean(db.prepare('SELECT 1 FROM schools WHERE id = ? AND kitchen_id = ?').get(schoolId, kitchenId));
+}
+
+function validateCompositions(body: JsonObject): { errors?: Record<string, string>; value?: Array<{ food_item_id: number; amount: number; unit: string }> } {
+  const raw = body.compositions;
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return { errors: { compositions: 'Menu harus memiliki minimal satu komposisi.' } };
+  }
+  const errors: Record<string, string> = {};
+  const result: Array<{ food_item_id: number; amount: number; unit: string }> = [];
+  for (let i = 0; i < raw.length; i++) {
+    const item = raw[i] as JsonObject;
+    const foodItemId = integerValue(item.food_item_id);
+    const amount = decimalValue(item.amount);
+    const unit = typeof item.unit === 'string' ? item.unit.trim() : '';
+    if (!foodItemId || foodItemId <= 0) errors['compositions.' + i + '.food_item_id'] = 'ID bahan tidak valid.';
+    if (amount === null || amount <= 0) errors['compositions.' + i + '.amount'] = 'Jumlah harus lebih dari 0.';
+    if (!unit) errors['compositions.' + i + '.unit'] = 'Unit wajib diisi.';
+    result.push({ food_item_id: foodItemId || 0, amount: amount || 0, unit: unit || 'g' });
+  }
+  if (Object.keys(errors).length) return { errors };
+  return { value: result };
+}
+
+function upsertCompositions(db: Database.Database, menuId: number, compositions: Array<{ food_item_id: number; amount: number; unit: string }>) {
+  db.prepare('DELETE FROM menu_compositions WHERE menu_id = ?').run(menuId);
+  const insert = db.prepare(`
+    INSERT INTO menu_compositions (menu_id, food_item_id, amount, unit, calories, protein, carbohydrates, fat, fiber)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (const comp of compositions) {
+    const foodItem = db.prepare('SELECT * FROM food_items WHERE id = ?').get(comp.food_item_id) as any;
+    if (!foodItem) continue;
+    insert.run(menuId, comp.food_item_id, comp.amount, comp.unit,
+      foodItem.calories_per_100g, foodItem.protein_per_100g,
+      foodItem.carbohydrates_per_100g, foodItem.fat_per_100g, foodItem.fiber_per_100g);
+  }
 }
 
 export function registerMenuRoutes(app: Hono<AuthEnv>, db: Database.Database) {
@@ -115,11 +169,43 @@ export function registerMenuRoutes(app: Hono<AuthEnv>, db: Database.Database) {
     return c.json({ data: rows.map(menuView), pagination: paginationResponse(page, perPage, total) });
   });
 
+  app.get('/api/admin/menus/week', (c) => {
+    const dateRaw = c.req.query('date');
+    const dateStr = dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw) ? dateRaw : new Date().toISOString().slice(0, 10);
+    const d = new Date(dateStr + 'T00:00:00');
+    const dayOfWeek = d.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + mondayOffset);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const startDate = monday.toISOString().slice(0, 10);
+    const endDate = sunday.toISOString().slice(0, 10);
+    const rows = getMenusByWeek(startDate, endDate) as any[];
+    const days: Record<string, any[]> = {};
+    for (const row of rows) {
+      if (!days[row.menu_date]) days[row.menu_date] = [];
+      days[row.menu_date].push(menuView(row));
+    }
+    const weekDays: Array<{ date: string; dayName: string; menus: any[] }> = [];
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(monday);
+      dd.setDate(monday.getDate() + i);
+      const dateKey = dd.toISOString().slice(0, 10);
+      weekDays.push({ date: dateKey, dayName: dayNames[dd.getDay()], menus: days[dateKey] || [] });
+    }
+    return c.json({ data: { startDate, endDate, days: weekDays } });
+  });
+
   app.get('/api/admin/menus/:id', (c) => {
     const id = pathId(c.req.param('id'));
     if (id === null) return validationResponse(c, { id: 'ID menu tidak valid.' });
     const row = loadMenu(db, id);
-    return row ? c.json({ data: menuView(row) }) : c.json({ message: 'Menu tidak ditemukan.' }, 404);
+    if (!row) return c.json({ message: 'Menu tidak ditemukan.' }, 404);
+    const compositions = getMenuCompositions(id, db);
+    const nutrition = loadMenuNutrition(db, id);
+    return c.json({ data: { ...menuView(row), compositions, nutrition } });
   });
 
   app.post('/api/admin/menus', async (c) => {
@@ -128,12 +214,20 @@ export function registerMenuRoutes(app: Hono<AuthEnv>, db: Database.Database) {
     const payload = menuPayload(body);
     if ('errors' in payload) return validationResponse(c, payload.errors);
     if (!validRelationship(db, payload.value.kitchenId, payload.value.schoolId)) return validationResponse(c, { school_id: 'Sekolah tidak terhubung dengan dapur yang dipilih.' });
+    const compResult = validateCompositions(body);
+    if ('errors' in compResult) return validationResponse(c, compResult.errors);
     const admin = c.get('admin');
-    const result = db.prepare(`
-      INSERT INTO menus (kitchen_id, school_id, name, meal_type, menu_date, description, composition, photo_url, calories, protein, carbohydrates, fat, fiber, created_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(payload.value.kitchenId, payload.value.schoolId, payload.value.name, payload.value.mealType, payload.value.menuDate, payload.value.description, payload.value.composition, payload.value.photoUrl, ...NUTRIENTS.map((key) => payload.value.nutrition[key]), admin.id);
-    return c.json({ data: menuView(loadMenu(db, Number(result.lastInsertRowid))), message: 'Menu berhasil dibuat.' }, 201);
+    const insertMenu = db.prepare(`
+      INSERT INTO menus (kitchen_id, school_id, name, meal_type, menu_date, description, photo_url, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = insertMenu.run(payload.value.kitchenId, payload.value.schoolId, payload.value.name, payload.value.mealType, payload.value.menuDate, payload.value.description, payload.value.photoUrl, admin.id);
+    const menuId = Number(result.lastInsertRowid);
+    upsertCompositions(db, menuId, compResult.value!);
+    const menu = loadMenu(db, menuId);
+    const compositions = getMenuCompositions(menuId, db);
+    const nutrition = loadMenuNutrition(db, menuId);
+    return c.json({ data: { ...menuView(menu), compositions, nutrition }, message: 'Menu berhasil dibuat.' }, 201);
   });
 
   const updateMenu = async (c: any) => {
@@ -147,9 +241,17 @@ export function registerMenuRoutes(app: Hono<AuthEnv>, db: Database.Database) {
     if ('errors' in payload) return validationResponse(c, payload.errors);
     if (!validRelationship(db, payload.value.kitchenId, payload.value.schoolId)) return validationResponse(c, { school_id: 'Sekolah tidak terhubung dengan dapur yang dipilih.' });
     db.prepare(`
-      UPDATE menus SET kitchen_id = ?, school_id = ?, name = ?, meal_type = ?, menu_date = ?, description = ?, composition = ?, photo_url = ?, calories = ?, protein = ?, carbohydrates = ?, fat = ?, fiber = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `).run(payload.value.kitchenId, payload.value.schoolId, payload.value.name, payload.value.mealType, payload.value.menuDate, payload.value.description, payload.value.composition, payload.value.photoUrl, ...NUTRIENTS.map((key) => payload.value.nutrition[key]), id);
-    return c.json({ data: menuView(loadMenu(db, id)), message: 'Menu berhasil diperbarui.' });
+      UPDATE menus SET kitchen_id = ?, school_id = ?, name = ?, meal_type = ?, menu_date = ?, description = ?, photo_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `).run(payload.value.kitchenId, payload.value.schoolId, payload.value.name, payload.value.mealType, payload.value.menuDate, payload.value.description, payload.value.photoUrl, id);
+    if (hasOwn(body, 'compositions') && Array.isArray(body.compositions)) {
+      const compResult = validateCompositions(body);
+      if ('errors' in compResult) return validationResponse(c, compResult.errors);
+      upsertCompositions(db, id, compResult.value!);
+    }
+    const menu = loadMenu(db, id);
+    const compositions = getMenuCompositions(id, db);
+    const nutrition = loadMenuNutrition(db, id);
+    return c.json({ data: { ...menuView(menu), compositions, nutrition }, message: 'Menu berhasil diperbarui.' });
   };
   app.put('/api/admin/menus/:id', updateMenu);
   app.patch('/api/admin/menus/:id', updateMenu);

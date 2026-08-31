@@ -4,7 +4,6 @@ import { getCookie, setCookie } from 'hono/cookie';
 import type Database from 'better-sqlite3';
 import { KeuanganPage } from './pages/keuangan.js';
 import { DashboardPage } from './pages/dashboard.js';
-import { MenuPage } from './pages/menu.js';
 import { StatistikPage } from './pages/statistik.js';
 import { AspirasiPage } from './pages/aspirasi.js';
 import { LokasiPage } from './pages/user/lokasi.js';
@@ -21,10 +20,17 @@ import { requireAdmin, SESSION_COOKIE, type AuthEnv } from './auth/middleware.js
 import { isSafeNextPath, validateLogin, validateRegistration } from './auth/validation.js';
 import { createDatabase } from './db/database.js';
 import { registerMenuRoutes } from './api/menus.js';
+import publicMenus from './api/menus.js';
+import publicFinance from './api/finance.js';
 import { registerFinanceRoutes } from './api/finance.js';
 import { registerAspirationRoutes } from './api/aspirations.js';
 import { registerMasterDataRoutes } from './api/master-data.js';
+import { registerFoodItemRoutes } from './api/food-items.js';
 import { AdminLokasiPage } from './pages/admin-lokasi.js';
+import { FoodItemsPage } from './pages/admin/food-items.js';
+import { MenuMingguanPage } from './pages/menu-mingguan.js';
+import { TambahHariPage } from './pages/tambah-hari.js';
+import { TambahMingguanPage } from './pages/tambah-mingguan.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
@@ -178,6 +184,11 @@ export function createApp(
   app.get('/laporan', (c) => c.html(<LaporanPage />));
   app.get('/keuangan', (c) => c.html(<KeuanganUserPage />));
 
+  // Public menu API (READ-only, no auth required)
+  app.route('/api', publicMenus);
+  // Public finance API (READ-only, no auth required)
+  app.route('/api', publicFinance);
+
   // Admin routes (protected)
   const adminMiddleware = requireAdmin(db);
   app.use('/admin', adminMiddleware);
@@ -189,8 +200,11 @@ export function createApp(
   app.get('/admin', (c) => c.html(<DashboardPage />));
   app.get('/admin/keuangan', (c) => c.html(<KeuanganPage />));
   app.get('/admin/keuangan/statistik', (c) => c.html(<StatistikPage />));
-  app.get('/admin/menu', (c) => c.html(<MenuPage />));
-  app.get('/admin/menu/tambah', (c) => c.html(<MenuPage />));
+  app.get('/admin/menu', (c) => c.html(<MenuMingguanPage />));
+  app.get('/admin/menu/tambah', (c) => c.html(<MenuMingguanPage />));
+  app.get('/admin/menu/tambah-hari', (c) => c.html(<TambahHariPage />));
+  app.get('/admin/menu/tambah-mingguan', (c) => c.html(<TambahMingguanPage />));
+  app.get('/admin/food-items', (c) => c.html(<FoodItemsPage />));
   app.get('/admin/aspirasi', (c) => c.html(<AspirasiPage />));
   app.get('/admin/lokasi', (c) => c.html(<AdminLokasiPage />));
 
@@ -198,6 +212,7 @@ export function createApp(
   registerFinanceRoutes(app, db);
   registerAspirationRoutes(app, db);
   registerMasterDataRoutes(app, db);
+  registerFoodItemRoutes(app, db);
 
   return app;
 }

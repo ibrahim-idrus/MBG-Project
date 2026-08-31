@@ -165,8 +165,8 @@ export function seedDatabase(): void {
   if (menuCount.count === 0) {
     console.log('Seeding menu data...');
     const insertMenu = db.prepare(`
-      INSERT INTO menus (kitchen_id, school_id, name, description, meal_type, menu_date, calories, protein, carbohydrates, fat, fiber, created_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO menus (kitchen_id, school_id, name, description, meal_type, menu_date, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
     const startDate = new Date('2024-01-01');
@@ -187,9 +187,9 @@ export function seedDatabase(): void {
       const lunch = lunchItems[day % lunchItems.length];
       const snack = snackItems[day % snackItems.length];
       
-      insertMenu.run(1, 1, breakfast.name, breakfast.description, breakfast.meal_type, dateStr, breakfast.calories, breakfast.protein, breakfast.carbohydrates, breakfast.fat, breakfast.fiber, adminId);
-      insertMenu.run(1, 1, lunch.name, lunch.description, lunch.meal_type, dateStr, lunch.calories, lunch.protein, lunch.carbohydrates, lunch.fat, lunch.fiber, adminId);
-      insertMenu.run(1, 1, snack.name, snack.description, snack.meal_type, dateStr, snack.calories, snack.protein, snack.carbohydrates, snack.fat, snack.fiber, adminId);
+      insertMenu.run(1, 1, breakfast.name, breakfast.description, breakfast.meal_type, dateStr, adminId);
+      insertMenu.run(1, 1, lunch.name, lunch.description, lunch.meal_type, dateStr, adminId);
+      insertMenu.run(1, 1, snack.name, snack.description, snack.meal_type, dateStr, adminId);
       
       menuInserted += 3;
     }
