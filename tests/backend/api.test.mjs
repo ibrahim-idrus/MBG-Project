@@ -33,22 +33,28 @@ test('menu CRUD validates kitchen-school relationship and uses session admin as 
   const { app, db, sessionCookie, admin } = createTestAppWithSession();
   const { kitchenId, otherKitchenId, schoolId } = addLocations(db);
 
+  // Seed a food item for compositions
+  db.prepare(`INSERT INTO food_items (name, default_unit, calories_per_100g, protein_per_100g, carbohydrates_per_100g, fat_per_100g, fiber_per_100g) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('Nasi Putih', 'g', 130, 2.7, 28.2, 0.3, 0.4);
+  const foodItemId = db.prepare('SELECT id FROM food_items WHERE name = ?').get('Nasi Putih').id;
+
   const invalid = await app.request('/api/admin/menus', jsonOptions('POST', {
     name: 'Menu Salah Relasi', kitchen_id: otherKitchenId, school_id: schoolId,
-    meal_type: 'lunch', menu_date: '2026-08-30', calories: 500, created_by: 9999,
+    meal_type: 'lunch', menu_date: '2026-08-30', compositions: [{ food_item_id: foodItemId, amount: 150, unit: 'g' }],
   }, sessionCookie));
   assert.equal(invalid.status, 400);
 
   const created = await app.request('/api/admin/menus', jsonOptions('POST', {
     name: 'Nasi Ayam', kitchen_id: kitchenId, school_id: schoolId,
-    meal_type: 'lunch', menu_date: '2026-08-30', composition: 'Nasi, ayam, sayur',
-    calories: 500, protein: 25, carbohydrates: 60, fat: 15, fiber: 5, created_by: 9999,
+    meal_type: 'lunch', menu_date: '2026-08-30', description: 'Nasi ayam lezat',
+    compositions: [{ food_item_id: foodItemId, amount: 150, unit: 'g' }],
   }, sessionCookie));
   assert.equal(created.status, 201);
   const createdBody = await created.json();
   assert.equal(createdBody.data.created_by, admin.id);
   assert.equal(createdBody.data.kitchen.id, kitchenId);
   assert.equal(createdBody.data.school.id, schoolId);
+  assert.ok(Array.isArray(createdBody.data.compositions));
+  assert.equal(createdBody.data.compositions.length, 1);
 
   const listed = await app.request('/api/admin/menus?page=1&per_page=10&search=Nasi&meal_type=lunch&kitchen_id=' + kitchenId, {
     headers: { cookie: sessionCookie },
@@ -61,7 +67,7 @@ test('menu CRUD validates kitchen-school relationship and uses session admin as 
   const menuId = createdBody.data.id;
   const updated = await app.request(`/api/admin/menus/${menuId}`, jsonOptions('PATCH', {
     name: 'Nasi Ayam Update', kitchen_id: kitchenId, school_id: schoolId,
-    meal_type: 'dinner', menu_date: '2026-08-30', created_by: 123,
+    meal_type: 'dinner', menu_date: '2026-08-30',
   }, sessionCookie));
   assert.equal(updated.status, 400);
 
