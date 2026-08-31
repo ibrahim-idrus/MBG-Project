@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import bcrypt from 'bcrypt';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { ensureDummyMasterData } from './dummy-master-data.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -136,6 +137,10 @@ export function seedDatabase(): void {
   
   // Enable WAL mode
   db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+
+  // Seed kitchens and schools first
+  ensureDummyMasterData(db);
   
   // Check if admin already exists
   const existingAdmin = db.prepare('SELECT id FROM admins WHERE email = ?').get(ADMIN_EMAIL) as { id: number } | undefined;
