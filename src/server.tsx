@@ -12,6 +12,7 @@ import { LaporanPage } from './pages/user/laporan.js';
 import { KeuanganUserPage } from './pages/user/keuangan.js';
 import { DetailSekolahPage } from './pages/user/detail-sekolah.js';
 import { DetailDapurPage } from './pages/user/detail-dapur.js';
+import { CekMbgPage } from './pages/user/cek-mbg.js';
 import { LoginPage } from './pages/auth/login.js';
 import { RegisterPage } from './pages/auth/register.js';
 import { hashPassword, verifyPassword } from './auth/password.js';
@@ -181,6 +182,8 @@ export function createApp(
     const id = c.req.param('id');
     return c.html(<DetailDapurPage id={id} />);
   });
+  app.get('/cek-mbg', (c) => c.html(<CekMbgPage db={db} initialKitchenId={c.req.query('kitchen_id')} />));
+  app.get('/cek-mbg/:id', (c) => c.html(<CekMbgPage db={db} initialKitchenId={c.req.param('id')} />));
   app.get('/menu', (c) => c.html(<JadwalMenuPage />));
   app.get('/laporan', (c) => c.html(<LaporanPage />));
   app.get('/keuangan', (c) => c.html(<KeuanganUserPage />));

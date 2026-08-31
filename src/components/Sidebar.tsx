@@ -22,6 +22,7 @@ const adminNavItems: NavItem[] = [
 
 const userNavItems: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/' },
+  { icon: 'location_searching', label: 'Cek MBG (Cerita)', href: '/cek-mbg' },
   { icon: 'payments', label: 'Keuangan', href: '/keuangan' },
   { icon: 'restaurant', label: 'Menu & Gizi', href: '/menu' },
   { icon: 'assessment', label: 'Laporan', href: '/laporan' },

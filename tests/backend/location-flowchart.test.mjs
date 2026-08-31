@@ -174,3 +174,36 @@ test('user lokasi page renders Cek MBG button, guided modal, and all flowchart s
   assert.match(html, /Buka Dashboard Utama SPPG/);
   assert.match(html, /active-sppg-filter-banner/);
 });
+
+test('dedicated standalone /cek-mbg story page renders full-page UI narrative report and dashboard redirection', async () => {
+  const { app, db } = createTestAppWithSession();
+  ensureDummyMasterData(db);
+
+  const res = await app.request('/cek-mbg');
+  assert.equal(res.status, 200);
+  const html = await res.text();
+
+  // Full-page header and title
+  assert.match(html, /Cek Transparansi (?:&|&amp;) Kualitas MBG/);
+  assert.match(html, /Laporan Interaktif Warga (?:&|&amp;) Orang Tua Murid/);
+
+  // Flowchart steps and Duolingo cards
+  assert.match(html, /Izinkan Akses Lokasi\?/);
+  assert.match(html, /btn-allow-location/);
+  assert.match(html, /btn-deny-location/);
+  assert.match(html, /Mencari SPPG di sekitar Anda\.\.\./);
+  assert.match(html, /select-province/);
+  assert.match(html, /btn-proceed-insights/);
+  assert.match(html, /btn-skip-insights/);
+
+  // Duolingo story narrative cards
+  assert.match(html, /Uang Makan Siang Anak Tersalurkan Utuh!/);
+  assert.match(html, /Kandungan Gizi Keseharian yang Didistribusikan/);
+  assert.match(html, /Persentase Sanitasi (?:&|&amp;) Kebersihan Dapur SPPG/);
+  assert.match(html, /Kasus Keracunan MBG dari SPPG Ini/);
+  assert.match(html, /SPPG Sangat Terpercaya (?:&|&amp;) Layak!/);
+
+  // Redirection callout to dashboard
+  assert.match(html, /Buka Dashboard Utama SPPG/);
+  assert.match(html, /redirectToDashboard/);
+});

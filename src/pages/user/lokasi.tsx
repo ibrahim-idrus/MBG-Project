@@ -264,6 +264,17 @@ export const LokasiPage: FC<{ db?: Database.Database }> = ({ db }) => {
                   </div>
                 </div>
 
+                {/* Story Report Button */}
+                <div class="mb-6">
+                  <a
+                    href={`/cek-mbg?kitchen_id=${kitchen.id}`}
+                    class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-on-primary py-3 px-4 rounded-xl font-bold text-sm shadow transition-all"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">auto_stories</span>
+                    Buka Laporan Cerita SPPG Ini (Cek MBG)
+                  </a>
+                </div>
+
                 {/* Google Maps */}
                 <div class="mb-6 rounded-lg overflow-hidden border border-surface-variant">
                   <div class="w-full h-48">
@@ -407,6 +418,33 @@ export const LokasiPage: FC<{ db?: Database.Database }> = ({ db }) => {
           </div>
         );
       })}
+
+      {/* Script to handle URL query parameter kitchen_id and highlight */}
+      <script dangerouslySetInnerHTML={{ __html: `
+        (function() {
+          const params = new URLSearchParams(window.location.search);
+          const kitchenId = params.get('kitchen_id');
+          const highlight = params.get('highlight');
+          if (kitchenId) {
+            const activeBanner = document.getElementById('active-sppg-filter-banner');
+            const activeName = document.getElementById('active-sppg-name-label');
+            const row = document.getElementById('kitchen-row-' + kitchenId);
+            if (row) {
+              row.classList.remove('hidden');
+              if (activeBanner && activeName) {
+                const kitchenName = row.querySelector('.font-headline-sm')?.innerText || 'Dapur MBG';
+                activeName.innerText = kitchenName;
+                activeBanner.classList.remove('hidden');
+              }
+              if (highlight) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('bg-primary-fixed/40');
+                setTimeout(function() { row.classList.remove('bg-primary-fixed/40'); }, 3500);
+              }
+            }
+          }
+        })();
+      `}}></script>
     </AdminLayout>
   );
 };
