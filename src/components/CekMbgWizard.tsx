@@ -327,92 +327,103 @@ export const CekMbgWizard: FC = () => {
               </div>
             </div>
 
-            {/* STEP 4: Insight 1 - Corruption Indication & Financial Consistency */}
-            <div id="wizard-step-insight-1" class="hidden space-y-5">
-              {/* Progress breadcrumb */}
-              <div class="flex items-center justify-between text-xs text-on-surface-variant pb-2 border-b border-surface-variant/60">
-                <span class="font-semibold text-primary">Insight 1 dari 4: Keuangan & Integritas</span>
-                <div class="flex gap-1.5">
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
+            {/* STEP 4: Insight 1 - Kawal Anggaran & Bebas Korupsi (Duolingo Story Card 1) */}
+            <div id="wizard-step-insight-1" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              {/* Duolingo Segmented Story Progress */}
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-primary flex items-center gap-1.5">
+                    <span class="text-base">🛡️</span>
+                    Cerita 1 dari 4: Kawal Anggaran MBG
+                  </span>
+                  <span class="font-semibold text-on-surface-variant">25% Selesai</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
                 </div>
               </div>
 
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 inline-flex items-center gap-1 mb-2">
+              {/* Character Speech Bubble Banner */}
+              <div class="bg-gradient-to-r from-primary-fixed/40 via-surface-bright to-primary-fixed/20 rounded-2xl p-5 border-2 border-primary/20 relative shadow-sm">
+                <div class="flex items-start gap-3.5">
+                  <div class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                    🛡️
+                  </div>
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">
                       <span class="material-symbols-outlined text-[14px]">verified</span>
-                      0 Indikasi Anomali (Bersih & Transparan)
-                    </span>
-                    <h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">
-                      Konsistensi Pemasukan vs Pengeluaran
+                      100% Konsistensi Pemasukan vs Pengeluaran
+                    </div>
+                    <h4 class="font-headline-sm text-headline-sm font-extrabold text-on-surface">
+                      Uang Makan Siang Anak Tersalurkan Utuh!
                     </h4>
-                  </div>
-                  <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-xl">account_balance</span>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      Kabar gembira untuk orang tua murid! Seluruh dana negara yang dialokasikan tercatat rapi secara digital dan tersalurkan langsung ke piring makanan anak-anak tanpa ada selisih fiktif ataupun mark-up harga.
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <p class="text-xs text-on-surface-variant leading-relaxed">
-                  Menampilkan evaluasi integritas dana MBG. Seluruh transaksi operasional dan belanja bahan pangan diaudit secara real-time untuk mencegah penyelewengan.
-                </p>
-
-                {/* Financial stats */}
+              {/* Duolingo Visual Report Card */}
+              <div class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50">
-                    <span class="text-[11px] text-on-surface-variant block mb-1">Total Pagu Diterima</span>
-                    <span class="font-bold text-sm text-on-surface" id="insight-finance-in">Rp150.000.000</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-primary/30 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Pagu Anggaran Masuk</span>
+                    <span class="font-extrabold text-base text-on-surface block" id="insight-finance-in">Rp150.000.000</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Dana Resmi BGN</span>
                   </div>
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50">
-                    <span class="text-[11px] text-on-surface-variant block mb-1">Realisasi Belanja Bahan</span>
-                    <span class="font-bold text-sm text-on-surface" id="insight-finance-out">Rp127.500.000</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-primary/30 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Realisasi Belanja Bahan</span>
+                    <span class="font-extrabold text-base text-on-surface block" id="insight-finance-out">Rp127.500.000</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">Kwitansi Digital</span>
                   </div>
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50">
-                    <span class="text-[11px] text-on-surface-variant block mb-1">Konsistensi Pembukuan</span>
-                    <span class="font-bold text-sm text-green-600">100% Sesuai SPJ</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-primary/30 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Indeks Integritas</span>
+                    <span class="font-extrabold text-base text-green-600 block">0 Indikasi Anomali</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">100% Sesuai SPJ</span>
                   </div>
                 </div>
 
-                {/* Integrity Checklist */}
-                <div class="bg-surface-bright rounded-xl p-4 border border-surface-variant/60 space-y-2.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface-variant flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
+                {/* Duolingo Story Checkpoint Pills */}
+                <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70 space-y-2.5">
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
                       Kesesuaian Harga Pasar Bahan Baku
                     </span>
-                    <span class="font-semibold text-green-700">Wajar (100%)</span>
+                    <span class="font-bold text-green-700">Wajar & Terverifikasi</span>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface-variant flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
                       Faktur & Kwitansi Pendukung Digital
                     </span>
-                    <span class="font-semibold text-green-700">Lengkap</span>
+                    <span class="font-bold text-green-700">Lengkap 100%</span>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface-variant flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
-                      Audit Trail Rekening BGN
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
+                      Audit Trail Rekening Resmi BGN
                     </span>
-                    <span class="font-semibold text-green-700">Terverifikasi</span>
+                    <span class="font-bold text-green-700">Bebas Potongan</span>
                   </div>
                 </div>
               </div>
 
-              {/* Navigation buttons */}
-              <div class="flex items-center justify-between pt-3 border-t border-surface-variant/60">
+              {/* Duolingo Action Bar */}
+              <div class="flex items-center justify-between pt-4 border-t border-surface-variant/60">
                 <button
                   type="button"
                   onclick="window.goToStep('sppg-result')"
-                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1"
+                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
                 >
                   <span class="material-symbols-outlined text-[16px]">arrow_back</span>
                   Kembali
                 </button>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
                     onclick="window.skipInsightsToDashboard()"
@@ -423,94 +434,105 @@ export const CekMbgWizard: FC = () => {
                   <button
                     type="button"
                     onclick="window.goToStep('insight-2')"
-                    class="bg-primary hover:bg-primary/90 text-on-primary px-5 py-2.5 rounded-xl font-semibold text-xs shadow-sm flex items-center gap-1.5"
+                    class="bg-primary hover:bg-[#3E2B82] text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                   >
-                    Lanjut: Cek Gizi
-                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    <span>Lanjut: Cek Piring Gizi 🥗</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* STEP 5: Insight 2 - Daily Nutrition Compliance */}
-            <div id="wizard-step-insight-2" class="hidden space-y-5">
-              {/* Progress breadcrumb */}
-              <div class="flex items-center justify-between text-xs text-on-surface-variant pb-2 border-b border-surface-variant/60">
-                <span class="font-semibold text-primary">Insight 2 dari 4: Pemenuhan Kandungan Gizi</span>
-                <div class="flex gap-1.5">
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
+            {/* STEP 5: Insight 2 - Daily Nutrition Compliance (Duolingo Story Card 2) */}
+            <div id="wizard-step-insight-2" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              {/* Duolingo Segmented Story Progress */}
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-primary flex items-center gap-1.5">
+                    <span class="text-base">🥗</span>
+                    Cerita 2 dari 4: Piring Gizi Juara
+                  </span>
+                  <span class="font-semibold text-on-surface-variant">50% Selesai</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
                 </div>
               </div>
 
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 inline-flex items-center gap-1 mb-2">
+              {/* Character Speech Bubble Banner */}
+              <div class="bg-gradient-to-r from-blue-500/10 via-surface-bright to-blue-500/5 rounded-2xl p-5 border-2 border-blue-200 dark:border-blue-900/40 relative shadow-sm">
+                <div class="flex items-start gap-3.5">
+                  <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                    🥗
+                  </div>
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                       <span class="material-symbols-outlined text-[14px]">restaurant_menu</span>
                       98.4% Terpenuhi Sesuai Standar AKG
-                    </span>
-                    <h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                    </div>
+                    <h4 class="font-headline-sm text-headline-sm font-extrabold text-on-surface">
                       Kandungan Gizi Keseharian yang Didistribusikan
                     </h4>
-                  </div>
-                  <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-xl">nutrition</span>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      Menu makan siang dirancang oleh nutrisionis bersertifikat agar anak-anak kenyang, sehat, dan berenergi tinggi untuk fokus belajar sepanjang hari di sekolah.
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <p class="text-xs text-on-surface-variant leading-relaxed">
-                  SPPG ini menyusun menu seimbang berbasis pangan lokal sesuai standar Angka Kecukupan Gizi (AKG) Kemenkes RI yang diawasi langsung oleh nutrisionis bersertifikat.
-                </p>
-
-                {/* Nutrition Grid */}
+              {/* Duolingo Visual Report Card */}
+              <div class="space-y-3">
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block">Kalori / Porsi</span>
-                    <span class="font-bold text-base text-primary">670 kcal</span>
-                    <span class="text-[10px] text-green-600 block">Target: 650 kcal (103%)</span>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">🍗 Protein Pembangun</span>
+                    <span class="font-extrabold text-lg text-primary block">27.5 g</span>
+                    <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Target: 25g (110%)</span>
                   </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block">Protein</span>
-                    <span class="font-bold text-base text-primary">27.5 g</span>
-                    <span class="text-[10px] text-green-600 block">Target: 25 g (110%)</span>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">🍚 Energi Kalori</span>
+                    <span class="font-extrabold text-lg text-primary block">670 kcal</span>
+                    <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Pas untuk Belajar</span>
                   </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block">Karbohidrat</span>
-                    <span class="font-bold text-base text-primary">82 g</span>
-                    <span class="text-[10px] text-green-600 block">Target: 80 g (102%)</span>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">🥦 Serat & Vitamin</span>
+                    <span class="font-extrabold text-lg text-primary block">5.5 g</span>
+                    <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Sayur Segar Lokal</span>
                   </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block">Lemak & Serat</span>
-                    <span class="font-bold text-base text-primary">19g / 5.5g</span>
-                    <span class="text-[10px] text-green-600 block">Seimbang & Kaya Vitamin</span>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">🥑 Karbo & Lemak Baik</span>
+                    <span class="font-extrabold text-lg text-primary block">82g / 19g</span>
+                    <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Keseimbangan Otak</span>
                   </div>
                 </div>
 
-                {/* Sample menu card */}
-                <div class="bg-surface-bright rounded-xl p-4 border border-surface-variant/60">
-                  <span class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider block mb-1.5">
-                    Contoh Distribusi Menu Seimbang:
-                  </span>
-                  <p class="text-xs text-on-surface font-medium leading-relaxed">
-                    Nasi Pulen Organik, Ayam Panggang Kecap Madu, Tumis Brokoli & Wortel Segar, Buah Pisang Raja, serta Susu Pasteurisasi.
+                {/* Sample Plate Card */}
+                <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-base">🍱</span>
+                    <span class="text-xs font-bold text-on-surface uppercase tracking-wider">
+                      Contoh Sajian Piring Gizi Hari Ini:
+                    </span>
+                  </div>
+                  <p class="text-xs text-on-surface font-medium leading-relaxed bg-surface-container-lowest p-3 rounded-xl border border-surface-variant/40">
+                    Nasi Pulen Organik, Ayam Panggang Kecap Madu, Tumis Brokoli & Jagung Manis, Pisang Raja Segar, dan Susu Pasteurisasi Berkalsium Tinggi.
                   </p>
                 </div>
               </div>
 
-              {/* Navigation buttons */}
-              <div class="flex items-center justify-between pt-3 border-t border-surface-variant/60">
+              {/* Duolingo Action Bar */}
+              <div class="flex items-center justify-between pt-4 border-t border-surface-variant/60">
                 <button
                   type="button"
                   onclick="window.goToStep('insight-1')"
-                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1"
+                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
                 >
                   <span class="material-symbols-outlined text-[16px]">arrow_back</span>
                   Kembali
                 </button>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
                     onclick="window.skipInsightsToDashboard()"
@@ -521,106 +543,125 @@ export const CekMbgWizard: FC = () => {
                   <button
                     type="button"
                     onclick="window.goToStep('insight-3')"
-                    class="bg-primary hover:bg-primary/90 text-on-primary px-5 py-2.5 rounded-xl font-semibold text-xs shadow-sm flex items-center gap-1.5"
+                    class="bg-primary hover:bg-[#3E2B82] text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                   >
-                    Lanjut: Sanitasi
-                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    <span>Lanjut: Cek Sanitasi Dapur ✨</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* STEP 6: Insight 3 - Sanitation and Cleanliness Percentage */}
-            <div id="wizard-step-insight-3" class="hidden space-y-5">
-              {/* Progress breadcrumb */}
-              <div class="flex items-center justify-between text-xs text-on-surface-variant pb-2 border-b border-surface-variant/60">
-                <span class="font-semibold text-primary">Insight 3 dari 4: Sanitasi & Kebersihan</span>
-                <div class="flex gap-1.5">
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-surface-container-high"></span>
+            {/* STEP 6: Insight 3 - Sanitation & SLHS Certificate (Duolingo Story Card 3) */}
+            <div id="wizard-step-insight-3" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              {/* Duolingo Segmented Story Progress */}
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-primary flex items-center gap-1.5">
+                    <span class="text-base">✨</span>
+                    Cerita 3 dari 4: Dapur Bersih & SLHS
+                  </span>
+                  <span class="font-semibold text-on-surface-variant">75% Selesai</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-surface-container-high"></div>
                 </div>
               </div>
 
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 inline-flex items-center gap-1 mb-2">
+              {/* Character Speech Bubble Banner */}
+              <div class="bg-gradient-to-r from-purple-500/10 via-surface-bright to-purple-500/5 rounded-2xl p-5 border-2 border-purple-200 dark:border-purple-900/40 relative shadow-sm">
+                <div class="flex items-start gap-3.5">
+                  <div class="w-12 h-12 rounded-2xl bg-purple-700 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                    ✨
+                  </div>
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                       <span class="material-symbols-outlined text-[14px]">clean_hands</span>
                       Tingkat Sanitasi: 96% (Sangat Baik)
-                    </span>
-                    <h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                    </div>
+                    <h4 class="font-headline-sm text-headline-sm font-extrabold text-on-surface">
                       Persentase Sanitasi & Kebersihan Dapur SPPG
                     </h4>
-                  </div>
-                  <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-xl">sanitizer</span>
-                  </div>
-                </div>
-
-                <p class="text-xs text-on-surface-variant leading-relaxed">
-                  Menampilkan evaluasi kelaikan higiene sanitasi dapur penyedia makanan berdasarkan inspeksi berkala Dinas Kesehatan dan audit Badan Gizi Nasional.
-                </p>
-
-                {/* SLHS Certificate box */}
-                <div class="bg-primary-fixed/30 rounded-xl p-4 border border-primary/20 flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-lg bg-primary text-white flex items-center justify-center">
-                      <span class="material-symbols-outlined text-[20px]">verified_user</span>
-                    </div>
-                    <div>
-                      <span class="text-xs font-bold text-on-surface block">Sertifikat Laik Higiene Sanitasi (SLHS)</span>
-                      <span class="text-[11px] text-on-surface-variant" id="insight-slhs-number">Tersertifikasi Resmi BGN & Dinkes</span>
-                    </div>
-                  </div>
-                  <span class="px-2.5 py-1 bg-green-600 text-white rounded-full text-[11px] font-bold">Terverifikasi</span>
-                </div>
-
-                {/* Hygiene Checklist */}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="font-semibold text-on-surface">Uji Lab Kualitas Air</span>
-                      <span class="font-bold text-green-600">100%</span>
-                    </div>
-                    <p class="text-[11px] text-on-surface-variant">Bebas E.Coli, logam berat, & klorin berlebih.</p>
-                  </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="font-semibold text-on-surface">Sterilisasi Alat & Wadah</span>
-                      <span class="font-bold text-green-600">98%</span>
-                    </div>
-                    <p class="text-[11px] text-on-surface-variant">Pencucian suhu tinggi & wadah food grade.</p>
-                  </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="font-semibold text-on-surface">Higiene Juru Masak (APD)</span>
-                      <span class="font-bold text-green-600">95%</span>
-                    </div>
-                    <p class="text-[11px] text-on-surface-variant">Masker, hairnet, sarung tangan, & swab berkala.</p>
-                  </div>
-                  <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/50">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="font-semibold text-on-surface">Pengelolaan Limbah</span>
-                      <span class="font-bold text-green-600">92%</span>
-                    </div>
-                    <p class="text-[11px] text-on-surface-variant">Pemisahan sampah organik & saluran tertutup.</p>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      Dapur memasak berstandar higienis layaknya masakan ibu di rumah, telah mengantongi Sertifikat Laik Higiene Sanitasi (SLHS) resmi dari Dinas Kesehatan.
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Navigation buttons */}
-              <div class="flex items-center justify-between pt-3 border-t border-surface-variant/60">
+              {/* Duolingo Visual Report Card */}
+              <div class="space-y-3">
+                {/* Official Certificate Stamp Card */}
+                <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border-2 border-primary/30 flex items-center justify-between shadow-sm">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow">
+                      <span class="material-symbols-outlined text-[22px]">verified_user</span>
+                    </div>
+                    <div>
+                      <span class="text-xs font-extrabold text-on-surface block">Sertifikat Laik Higiene Sanitasi (SLHS)</span>
+                      <span class="text-[11px] text-primary font-mono font-semibold" id="insight-slhs-number">Tersertifikasi Resmi BGN & Dinkes</span>
+                    </div>
+                  </div>
+                  <span class="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-extrabold shadow-sm">
+                    Terverifikasi
+                  </span>
+                </div>
+
+                {/* 4 Cleanliness Checkpoints */}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                      <span class="font-bold text-on-surface flex items-center gap-1.5">
+                        <span class="text-base">💧</span> Uji Lab Kualitas Air
+                      </span>
+                      <span class="font-extrabold text-green-600">100% Lolos</span>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant">Bebas bakteri E.Coli, logam berat, & klorin berlebih.</p>
+                  </div>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                      <span class="font-bold text-on-surface flex items-center gap-1.5">
+                        <span class="text-base">🍽️</span> Sterilisasi Alat & Wadah
+                      </span>
+                      <span class="font-extrabold text-green-600">98% Steril</span>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant">Pencucian suhu tinggi dengan wadah food-grade aman.</p>
+                  </div>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                      <span class="font-bold text-on-surface flex items-center gap-1.5">
+                        <span class="text-base">👨‍🍳</span> Higiene Juru Masak (APD)
+                      </span>
+                      <span class="font-extrabold text-green-600">95% Patuh</span>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant">Wajib masker, hairnet, sarung tangan, & swab berkala.</p>
+                  </div>
+                  <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                      <span class="font-bold text-on-surface flex items-center gap-1.5">
+                        <span class="text-base">🗑️</span> Pengelolaan Limbah Dapur
+                      </span>
+                      <span class="font-extrabold text-green-600">92% Bersih</span>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant">Pemisahan sampah organik & saluran tertutup higienis.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Duolingo Action Bar */}
+              <div class="flex items-center justify-between pt-4 border-t border-surface-variant/60">
                 <button
                   type="button"
                   onclick="window.goToStep('insight-2')"
-                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1"
+                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
                 >
                   <span class="material-symbols-outlined text-[16px]">arrow_back</span>
                   Kembali
                 </button>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
                     onclick="window.skipInsightsToDashboard()"
@@ -631,111 +672,183 @@ export const CekMbgWizard: FC = () => {
                   <button
                     type="button"
                     onclick="window.goToStep('insight-4')"
-                    class="bg-primary hover:bg-primary/90 text-on-primary px-5 py-2.5 rounded-xl font-semibold text-xs shadow-sm flex items-center gap-1.5"
+                    class="bg-primary hover:bg-[#3E2B82] text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                   >
-                    Lanjut: Rekam Jejak
-                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    <span>Lanjut: Rekam Jejak Keamanan 🛡️</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* STEP 7: Insight 4 - Food Poisoning Record */}
-            <div id="wizard-step-insight-4" class="hidden space-y-5">
-              {/* Progress breadcrumb */}
-              <div class="flex items-center justify-between text-xs text-on-surface-variant pb-2 border-b border-surface-variant/60">
-                <span class="font-semibold text-primary">Insight 4 dari 4: Rekam Jejak Keamanan MBG</span>
-                <div class="flex gap-1.5">
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
-                  <span class="w-6 h-1.5 rounded-full bg-primary"></span>
+            {/* STEP 7: Insight 4 - Food Poisoning Record & Safety (Duolingo Story Card 4) */}
+            <div id="wizard-step-insight-4" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              {/* Duolingo Segmented Story Progress */}
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-primary flex items-center gap-1.5">
+                    <span class="text-base">🛡️</span>
+                    Cerita 4 dari 4: Rekam Jejak Bebas Keracunan
+                  </span>
+                  <span class="font-semibold text-on-surface-variant">100% Selesai</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
+                  <div class="h-2 rounded-full bg-primary shadow-sm"></div>
                 </div>
               </div>
 
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 inline-flex items-center gap-1 mb-2">
+              {/* Character Speech Bubble Banner */}
+              <div class="bg-gradient-to-r from-emerald-500/10 via-surface-bright to-emerald-500/5 rounded-2xl p-5 border-2 border-emerald-200 dark:border-emerald-900/40 relative shadow-sm">
+                <div class="flex items-start gap-3.5">
+                  <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                    🛡️
+                  </div>
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">
                       <span class="material-symbols-outlined text-[14px]">shield_with_heart</span>
                       0 Kasus Keracunan Dilaporkan (100% Aman)
-                    </span>
-                    <h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                    </div>
+                    <h4 class="font-headline-sm text-headline-sm font-extrabold text-on-surface">
                       Kasus Keracunan MBG dari SPPG Ini
                     </h4>
-                  </div>
-                  <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-xl">safety_check</span>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      Nol insiden keracunan sejak hari pertama penyaluran! SPPG menerapkan protokol ketat: uji organoleptik setiap batch dan penyimpanan sampel makanan 24 jam di cold storage.
+                    </p>
                   </div>
                 </div>
+              </div>
 
-                <p class="text-xs text-on-surface-variant leading-relaxed">
-                  Menunjukkan rekam jejak insiden dan kepatuhan keamanan pangan sejak awal beroperasi. SPPG ini menjaga zero incident melalui protokol retensi sampel makanan 24 jam.
-                </p>
-
-                {/* Poisoning stats */}
+              {/* Duolingo Visual Report Card */}
+              <div class="space-y-3">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block mb-0.5">Total Kasus Keracunan</span>
-                    <span class="font-bold text-xl text-green-600">0 Kasus</span>
-                    <span class="text-[10px] text-on-surface-variant">Zero Incident Record</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-emerald-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Total Insiden Keracunan</span>
+                    <span class="font-extrabold text-2xl text-green-600 block">0 Kasus</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">Zero Incident Record</span>
                   </div>
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block mb-0.5">Sample Retention Box</span>
-                    <span class="font-bold text-sm text-primary">24 Jam Disimpan</span>
-                    <span class="text-[10px] text-on-surface-variant">Suhu 4°C Terjaga</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-emerald-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Sample Retention Box</span>
+                    <span class="font-extrabold text-base text-primary block">24 Jam Disimpan</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Suhu 4°C Terjaga</span>
                   </div>
-                  <div class="bg-surface-container-low p-3.5 rounded-xl border border-surface-variant/50 text-center">
-                    <span class="text-[11px] text-on-surface-variant block mb-0.5">Kepuasan & Keamanan Siswa</span>
-                    <span class="font-bold text-xl text-amber-600">4.9 / 5.0</span>
-                    <span class="text-[10px] text-on-surface-variant">1.250+ Ulasan Positif</span>
+                  <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-emerald-300 transition-colors">
+                    <span class="text-xs text-on-surface-variant block mb-1">Kepuasan Siswa & Guru</span>
+                    <span class="font-extrabold text-2xl text-amber-600 block">4.9 / 5.0</span>
+                    <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">1.250+ Ulasan Positif</span>
                   </div>
                 </div>
 
                 {/* Safety Protocol Checklist */}
-                <div class="bg-surface-bright rounded-xl p-4 border border-surface-variant/60 space-y-2">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface flex items-center gap-1.5 font-medium">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
+                <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70 space-y-2">
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
                       Pengujian Organoleptik (Rasa, Aroma, Warna) Setiap Batch
                     </span>
-                    <span class="font-semibold text-green-700">Lolos</span>
+                    <span class="font-bold text-green-700">Lolos</span>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface flex items-center gap-1.5 font-medium">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
                       Monitoring Suhu Makanan Saat Distribusi (&gt; 60°C)
                     </span>
-                    <span class="font-semibold text-green-700">Terkontrol</span>
+                    <span class="font-bold text-green-700">Terkontrol</span>
                   </div>
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-on-surface flex items-center gap-1.5 font-medium">
-                      <span class="material-symbols-outlined text-green-600 text-[16px]">check_circle</span>
+                  <div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2.5 rounded-xl border border-surface-variant/40">
+                    <span class="text-on-surface font-medium flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">✓</span>
                       Kanal Pelaporan & Reaksi Cepat 24 Jam
                     </span>
-                    <span class="font-semibold text-green-700">Tersedia</span>
+                    <span class="font-bold text-green-700">Siaga</span>
                   </div>
                 </div>
               </div>
 
-              {/* Navigation buttons: Finish & Open Main Dashboard */}
-              <div class="flex items-center justify-between pt-3 border-t border-surface-variant/60">
+              {/* Duolingo Action Bar */}
+              <div class="flex items-center justify-between pt-4 border-t border-surface-variant/60">
                 <button
                   type="button"
                   onclick="window.goToStep('insight-3')"
-                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1"
+                  class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
                 >
                   <span class="material-symbols-outlined text-[16px]">arrow_back</span>
                   Kembali
                 </button>
                 <button
                   type="button"
+                  onclick="window.goToStep('insight-summary')"
+                  class="bg-primary hover:bg-[#3E2B82] text-white font-bold text-sm px-7 py-3.5 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
+                >
+                  <span>Lihat Rapor Akhir! 🏆</span>
+                  <span class="material-symbols-outlined text-[18px]">emoji_events</span>
+                </button>
+              </div>
+            </div>
+
+            {/* STEP 8: Celebratory Final Summary Card (Duolingo Scorecard) */}
+            <div id="wizard-step-insight-summary" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200 text-center py-2">
+              {/* Trophy Avatar */}
+              <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950 flex items-center justify-center mx-auto shadow-lg text-4xl animate-bounce">
+                🏆
+              </div>
+
+              <div class="space-y-1 max-w-md mx-auto">
+                <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
+                  ⭐⭐⭐⭐⭐ SPPG Bintang 5
+                </div>
+                <h3 class="text-2xl font-extrabold text-on-surface">
+                  SPPG Sangat Terpercaya & Layak!
+                </h3>
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                  Semua 4 pilar pengawasan transparansi MBG telah terpenuhi dengan predikat memuaskan. Makanan anak-anak di wilayah ini terpantau aman, bergizi, dan bebas dari korupsi.
+                </p>
+              </div>
+
+              {/* 4-Pillar Scorecard */}
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-w-lg mx-auto">
+                <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/70 text-center">
+                  <span class="text-lg block">🪙</span>
+                  <span class="text-[11px] text-on-surface-variant block mt-0.5">Keuangan</span>
+                  <span class="font-extrabold text-xs text-green-700 block">100% Bersih</span>
+                </div>
+                <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/70 text-center">
+                  <span class="text-lg block">🥗</span>
+                  <span class="text-[11px] text-on-surface-variant block mt-0.5">Gizi AKG</span>
+                  <span class="font-extrabold text-xs text-green-700 block">98.4% Sesuai</span>
+                </div>
+                <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/70 text-center">
+                  <span class="text-lg block">✨</span>
+                  <span class="text-[11px] text-on-surface-variant block mt-0.5">Sanitasi</span>
+                  <span class="font-extrabold text-xs text-green-700 block">96% (SLHS)</span>
+                </div>
+                <div class="bg-surface-container-low p-3 rounded-xl border border-surface-variant/70 text-center">
+                  <span class="text-lg block">🛡️</span>
+                  <span class="text-[11px] text-on-surface-variant block mt-0.5">Keamanan</span>
+                  <span class="font-extrabold text-xs text-green-700 block">0 Kasus (Aman)</span>
+                </div>
+              </div>
+
+              {/* Final Actions */}
+              <div class="pt-3 space-y-2.5 max-w-md mx-auto">
+                <button
+                  type="button"
                   id="btn-finish-dashboard"
                   onclick="window.skipInsightsToDashboard()"
-                  class="bg-primary hover:bg-primary/90 text-on-primary px-6 py-3 rounded-xl font-bold text-sm shadow-md flex items-center gap-2 active:scale-95 transition-all"
+                  class="w-full bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-base py-3.5 px-6 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2"
                 >
-                  <span class="material-symbols-outlined text-[18px]">dashboard</span>
-                  Buka Dashboard Utama SPPG
+                  <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                  Buka Dashboard Utama SPPG 🚀
+                </button>
+                <button
+                  type="button"
+                  onclick="window.goToStep('insight-1')"
+                  class="text-xs text-primary font-bold hover:underline py-1.5 flex items-center justify-center gap-1 mx-auto"
+                >
+                  <span class="material-symbols-outlined text-[16px]">refresh</span>
+                  Ulangi Baca Cerita Laporan
                 </button>
               </div>
             </div>
@@ -773,7 +886,8 @@ export const CekMbgWizard: FC = () => {
               'insight-1',
               'insight-2',
               'insight-3',
-              'insight-4'
+              'insight-4',
+              'insight-summary'
             ];
 
             steps.forEach(function(s) {
@@ -799,10 +913,13 @@ export const CekMbgWizard: FC = () => {
             } else if (stepName === 'sppg-result') {
               if (titleEl) titleEl.innerText = 'SPPG Ditemukan';
               if (subEl) subEl.innerText = 'Dapur pelayanan gizi di kelurahan Anda';
+            } else if (stepName === 'insight-summary') {
+              if (titleEl) titleEl.innerText = 'Rapor Kelayakan SPPG 🏆';
+              if (subEl) subEl.innerText = 'Rangkuman 4 pilar pengawasan transparansi MBG';
             } else if (stepName.startsWith('insight-')) {
               const idx = stepName.split('-')[1];
-              if (titleEl) titleEl.innerText = 'Insight SPPG (' + idx + '/4)';
-              if (subEl) subEl.innerText = 'Evaluasi kualitas, gizi, sanitasi & integritas';
+              if (titleEl) titleEl.innerText = 'Laporan Cerita SPPG (' + idx + '/4)';
+              if (subEl) subEl.innerText = 'Kisah transparansi, gizi, sanitasi & integritas';
             }
           };
 

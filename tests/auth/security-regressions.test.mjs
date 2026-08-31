@@ -45,7 +45,7 @@ test('production startup applies all migrations before listening on a fresh data
   const databasePath = join(tempDirectory, 'fresh.db');
   const server = spawn(process.execPath, [entrypoint], {
     cwd: projectRoot,
-    env: { ...process.env, DATABASE_PATH: databasePath, PORT: '3991' },
+    env: { ...process.env, DATABASE_PATH: databasePath, PORT: '3999' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
