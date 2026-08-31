@@ -24,6 +24,7 @@ import { registerMenuRoutes } from './api/menus.js';
 import { registerFinanceRoutes } from './api/finance.js';
 import { registerAspirationRoutes } from './api/aspirations.js';
 import { registerMasterDataRoutes } from './api/master-data.js';
+import { registerLocationCheckRoutes } from './api/location-check.js';
 import { AdminLokasiPage } from './pages/admin-lokasi.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
@@ -63,7 +64,7 @@ export function createApp(
 ): Hono<AuthEnv> {
   const app = new Hono<AuthEnv>();
 
-  app.get('/', (c) => c.html(<LokasiPage />));
+  app.get('/', (c) => c.html(<LokasiPage db={db} />));
 
   app.get('/login', (c) => c.html(<LoginPage next={c.req.query('next')} />));
   app.post('/login', async (c) => {
@@ -165,7 +166,7 @@ export function createApp(
   });
 
   // Public user routes
-  app.get('/lokasi', (c) => c.html(<LokasiPage />));
+  app.get('/lokasi', (c) => c.html(<LokasiPage db={db} />));
   app.get('/lokasi/sekolah/:id', (c) => {
     const id = c.req.param('id');
     return c.html(<DetailSekolahPage id={id} />);
@@ -198,6 +199,7 @@ export function createApp(
   registerFinanceRoutes(app, db);
   registerAspirationRoutes(app, db);
   registerMasterDataRoutes(app, db);
+  registerLocationCheckRoutes(app, db);
 
   return app;
 }

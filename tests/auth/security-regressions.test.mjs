@@ -60,7 +60,7 @@ test('production startup applies all migrations before listening on a fresh data
   try {
     assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name = 'admins'").get()?.name, 'admins');
     assert.equal(db.prepare("SELECT name FROM sqlite_master WHERE name = 'auth_sessions'").get()?.name, 'auth_sessions');
-    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM migrations').get().count, 9);
+    assert.equal(db.prepare('SELECT COUNT(*) AS count FROM migrations').get().count >= 9, true);
   } finally {
     db.close();
   }

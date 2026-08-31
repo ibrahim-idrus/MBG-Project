@@ -1,16 +1,21 @@
 -- Migration: Remove nutrition columns from menus
 -- Purpose: Normalize nutrition data into menu_compositions
 
--- Create new table without nutrition columns
 CREATE TABLE IF NOT EXISTS menus_new (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kitchen_id INTEGER NOT NULL,
   school_id INTEGER NOT NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT,
+  composition TEXT,
   meal_type VARCHAR(20) NOT NULL CHECK (meal_type IN ('breakfast', 'lunch', 'snack')),
   menu_date DATE NOT NULL,
   photo_url VARCHAR(500),
+  calories DECIMAL(10,2),
+  protein DECIMAL(10,2),
+  carbohydrates DECIMAL(10,2),
+  fat DECIMAL(10,2),
+  fiber DECIMAL(10,2),
   created_by INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -19,9 +24,9 @@ CREATE TABLE IF NOT EXISTS menus_new (
   FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Copy data from old table (excluding nutrition columns)
-INSERT INTO menus_new (id, kitchen_id, school_id, name, description, meal_type, menu_date, photo_url, created_by, created_at, updated_at)
-SELECT id, kitchen_id, school_id, name, description, meal_type, menu_date, photo_url, created_by, created_at, updated_at
+-- Copy data from old table
+INSERT INTO menus_new (id, kitchen_id, school_id, name, description, composition, meal_type, menu_date, photo_url, calories, protein, carbohydrates, fat, fiber, created_by, created_at, updated_at)
+SELECT id, kitchen_id, school_id, name, description, composition, meal_type, menu_date, photo_url, calories, protein, carbohydrates, fat, fiber, created_by, created_at, updated_at
 FROM menus;
 
 -- Drop old table

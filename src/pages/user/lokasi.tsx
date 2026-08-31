@@ -1,10 +1,12 @@
 import type { FC } from 'hono/jsx';
+import type Database from 'better-sqlite3';
 import { AdminLayout } from '../../layouts/AdminLayout.js';
 import { getKitchens, getSchools, getKitchenById, getSchoolById, getSchoolsByKitchenId } from '../../db/queries.js';
+import { CekMbgWizard } from '../../components/CekMbgWizard.js';
 
-export const LokasiPage: FC = () => {
-  const kitchens = getKitchens() as any[];
-  const schools = getSchools() as any[];
+export const LokasiPage: FC<{ db?: Database.Database }> = ({ db }) => {
+  const kitchens = getKitchens(db) as any[];
+  const schools = getSchools(undefined, db) as any[];
   const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
   // Pre-compute school stats per kitchen
@@ -26,10 +28,32 @@ export const LokasiPage: FC = () => {
 
   return (
     <AdminLayout title="Lokasi & Sekolah" activePage="/" variant="user">
+      {/* Flowchart Wizard & Hero Entry Point */}
+      <CekMbgWizard />
+
+      {/* Active Filter Notification Banner */}
+      <div id="active-sppg-filter-banner" class="hidden mb-6 p-4 rounded-xl bg-primary-fixed/40 border border-primary/20 flex items-center justify-between transition-all">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary text-2xl">pin_drop</span>
+          <div>
+            <span class="text-xs text-on-surface-variant font-medium block">Menampilkan Data SPPG Terpilih:</span>
+            <span class="font-bold text-base text-primary" id="active-sppg-name-label">Dapur MBG</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="window.resetActiveSppgFilter()"
+          class="text-xs text-on-surface-variant hover:text-error flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-surface-container-high transition-colors"
+        >
+          <span class="material-symbols-outlined text-[16px]">close</span>
+          Tampilkan Semua Dapur
+        </button>
+      </div>
+
       <div class="mb-8 flex justify-between items-end">
         <div>
-          <h2 class="font-display-lg text-display-lg text-on-surface mb-2">Lokasi & Sekolah MBG</h2>
-          <p class="font-body-md text-body-md text-on-surface-variant">Daftar Dapur MBG dan sekolah yang dilayani.</p>
+          <h2 class="font-display-lg text-display-lg text-on-surface mb-2">Dashboard Lokasi & SPPG MBG</h2>
+          <p class="font-body-md text-body-md text-on-surface-variant">Daftar Dapur MBG dan sekolah yang dilayani di seluruh wilayah.</p>
         </div>
       </div>
 
@@ -81,6 +105,7 @@ export const LokasiPage: FC = () => {
                   const stats = kitchenStats.get(kitchen.name) || { schoolCount: 0, studentCount: 0 };
                   return (
                     <tr 
+                      id={`kitchen-row-${kitchen.id}`}
                       class={`border-b border-surface-variant/50 hover:bg-surface-container-lowest transition-colors cursor-pointer ${index >= INITIAL_LIMIT ? 'hidden kitchen-extra' : ''}`}
                       onclick={`document.getElementById('kitchen-modal-${kitchen.id}').classList.remove('hidden'); document.getElementById('kitchen-map-${kitchen.id}').src = document.getElementById('kitchen-map-${kitchen.id}').dataset.src;`}
                     >
@@ -168,7 +193,7 @@ export const LokasiPage: FC = () => {
 
       {/* Kitchen Detail Modals */}
       {kitchens.map((kitchen: any) => {
-        const kitchenSchools = getSchoolsByKitchenId(kitchen.id) as any[];
+        const kitchenSchools = getSchoolsByKitchenId(kitchen.id, db) as any[];
         const fullAddress = `${kitchen.address}, ${kitchen.village}, ${kitchen.district}, ${kitchen.city}, ${kitchen.province} ${kitchen.postal_code}`;
         const totalKitchenStudents = kitchenSchools.reduce((sum: number, s: any) => sum + s.student_count, 0);
         
