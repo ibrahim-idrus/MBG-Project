@@ -20,8 +20,7 @@ import { createSession, revokeSession } from './auth/session.js';
 import { requireAdmin, SESSION_COOKIE, type AuthEnv } from './auth/middleware.js';
 import { isSafeNextPath, validateLogin, validateRegistration } from './auth/validation.js';
 import { createDatabase } from './db/database.js';
-import { registerMenuRoutes } from './api/menus.js';
-import publicMenus from './api/menus.js';
+import { registerMenuRoutes, createPublicMenuRouter } from './api/menus.js';
 import publicFinance from './api/finance.js';
 import { registerFinanceRoutes } from './api/finance.js';
 import { registerAspirationRoutes } from './api/aspirations.js';
@@ -31,8 +30,11 @@ import { registerFoodItemRoutes } from './api/food-items.js';
 import { AdminLokasiPage } from './pages/admin-lokasi.js';
 import { FoodItemsPage } from './pages/admin/food-items.js';
 import { MenuMingguanPage } from './pages/menu-mingguan.js';
+import { MenuPage } from './pages/menu.js';
 import { TambahHariPage } from './pages/tambah-hari.js';
 import { TambahMingguanPage } from './pages/tambah-mingguan.js';
+import { AdminProfilePage } from './pages/admin/profile.js';
+import { getSchoolsByKitchenId } from './db/queries.js';
 
 const GENERIC_LOGIN_ERROR = 'Email atau kata sandi tidak valid.';
 const DUPLICATE_EMAIL_ERROR = 'Email sudah terdaftar.';
@@ -148,6 +150,13 @@ export function createApp(
       return c.html(<RegisterPage error={DUPLICATE_EMAIL_ERROR} />, 400);
     }
 
+    // Link the new admin to the first available active kitchen so they can
+    // immediately manage aspirations for it.
+    db.prepare(
+      `INSERT OR IGNORE INTO admin_kitchens (admin_id, kitchen_id)
+       SELECT ?, id FROM mbg_kitchens WHERE status = 'active' ORDER BY id ASC LIMIT 1`
+    ).run(adminId);
+
     const session = createSession(db, adminId);
     setCookie(c, SESSION_COOKIE, session.token, {
       ...sessionCookieOptions(c.req.url),
@@ -189,9 +198,34 @@ export function createApp(
   app.get('/keuangan', (c) => c.html(<KeuanganUserPage />));
 
   // Public menu API (READ-only, no auth required)
-  app.route('/api', publicMenus);
+  app.route('/api', createPublicMenuRouter(db));
   // Public finance API (READ-only, no auth required)
   app.route('/api', publicFinance);
+
+  // Public lookup endpoints used by the user-facing menu picker. The user
+  // page must select a kitchen or school before it will render any menus, so
+  // these endpoints are intentionally read-only and filter by status.
+  app.get('/api/schools', (c) => {
+    const kitchenIdRaw = c.req.query('kitchen_id');
+    const where: string[] = ["s.status = 'active'"];
+    const params: unknown[] = [];
+    if (kitchenIdRaw) {
+      const kid = Number(kitchenIdRaw);
+      if (!Number.isInteger(kid) || kid <= 0) return c.json({ error: 'Parameter kitchen_id tidak valid.' }, 400);
+      where.push('s.kitchen_id = ?');
+      params.push(kid);
+    }
+    const rows = db
+      .prepare(
+        `SELECT s.id, s.name, s.npsn, s.kitchen_id, k.name AS kitchen_name, k.code AS kitchen_code
+           FROM schools s
+           JOIN mbg_kitchens k ON k.id = s.kitchen_id
+          WHERE ${where.join(' AND ')}
+          ORDER BY s.name ASC`
+      )
+      .all(...params);
+    return c.json({ data: rows });
+  });
 
   // Admin routes (protected)
   const adminMiddleware = requireAdmin(db);
@@ -204,13 +238,52 @@ export function createApp(
   app.get('/admin', (c) => c.html(<DashboardPage />));
   app.get('/admin/keuangan', (c) => c.html(<KeuanganPage />));
   app.get('/admin/keuangan/statistik', (c) => c.html(<StatistikPage />));
-  app.get('/admin/menu', (c) => c.html(<MenuMingguanPage />));
-  app.get('/admin/menu/tambah', (c) => c.html(<MenuMingguanPage />));
+  app.get('/admin/menu', (c) => c.html(<MenuPage />));
+  app.get('/admin/menu/mingguan', (c) => c.html(<MenuMingguanPage />));
+  app.get('/admin/menu/tambah', (c) => c.html(<MenuPage />));
   app.get('/admin/menu/tambah-hari', (c) => c.html(<TambahHariPage />));
   app.get('/admin/menu/tambah-mingguan', (c) => c.html(<TambahMingguanPage />));
   app.get('/admin/food-items', (c) => c.html(<FoodItemsPage />));
   app.get('/admin/aspirasi', (c) => c.html(<AspirasiPage />));
   app.get('/admin/lokasi', (c) => c.html(<AdminLokasiPage />));
+  app.get('/admin/profile', (c) => {
+    const session = c.get('admin');
+    const kitchenRows = db
+      .prepare(
+        `SELECT k.id, k.name, k.code, k.city, k.province, k.status
+           FROM mbg_kitchens k
+           JOIN admin_kitchens ak ON ak.kitchen_id = k.id
+          WHERE ak.admin_id = ?
+          ORDER BY k.name ASC`
+      )
+      .all(session.id) as { id: number; name: string; code: string; city: string; province: string; status: string }[];
+
+    const kitchens = kitchenRows.map((k) => ({
+      ...k,
+      schools: getSchoolsByKitchenId(k.id) as Array<{
+        id: number;
+        name: string;
+        npsn: string;
+        student_count: number;
+        status: string;
+      }>,
+    }));
+
+    const totalSchools = kitchens.reduce((sum, k) => sum + k.schools.length, 0);
+    const totalStudents = kitchens.reduce(
+      (sum, k) => sum + k.schools.reduce((s, school) => s + school.student_count, 0),
+      0,
+    );
+
+    return c.html(
+      <AdminProfilePage
+        admin={{ id: session.id, name: session.name, email: session.email, role: session.role }}
+        kitchens={kitchens}
+        totalSchools={totalSchools}
+        totalStudents={totalStudents}
+      />,
+    );
+  });
 
   registerMenuRoutes(app, db);
   registerFinanceRoutes(app, db);

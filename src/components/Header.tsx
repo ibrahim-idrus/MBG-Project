@@ -2,9 +2,15 @@ import type { FC } from 'hono/jsx';
 
 interface HeaderProps {
   title: string;
+  variant?: 'admin' | 'user';
 }
 
-export const Header: FC<HeaderProps> = ({ title }) => {
+export const Header: FC<HeaderProps> = ({ title, variant = 'user' }) => {
+  const avatar = (
+    <div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant flex items-center justify-center text-on-primary-container">
+      <span class="material-symbols-outlined text-sm">person</span>
+    </div>
+  );
   return (
     <header class="bg-surface shadow-sm h-16 px-gutter flex justify-between items-center sticky top-0 z-10 w-full">
       <div class="flex items-center gap-4">
@@ -24,11 +30,20 @@ export const Header: FC<HeaderProps> = ({ title }) => {
           <span class="material-symbols-outlined">notifications</span>
           <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
         </button>
-        <div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant cursor-pointer ml-2">
-          <div class="w-full h-full bg-primary-container flex items-center justify-center text-on-primary-container">
-            <span class="material-symbols-outlined text-sm">person</span>
+        {variant === 'admin' ? (
+          <a
+            href="/admin/profile"
+            class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant cursor-pointer ml-2 hover:border-primary transition-colors"
+            aria-label="Profil Admin"
+            title="Profil Admin"
+          >
+            {avatar}
+          </a>
+        ) : (
+          <div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant cursor-pointer ml-2">
+            {avatar}
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

@@ -100,10 +100,20 @@ export function getMenuStats() {
   };
 }
 
-export function getMenusByDate(date: string) {
-  return db().prepare(`
+export function getMenusByDate(
+  date: string,
+  extraClause: string = '1=1',
+  extraParams: unknown[] = [],
+  database?: Database.Database,
+) {
+  const conn = database ?? db();
+  const clause = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? 'm.menu_date = ?' : extraClause;
+  const params = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? [date, ...extraParams] : extraParams;
+  return conn.prepare(`
     SELECT m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date,
-           k.name as kitchen_name, s.name as school_name,
+           m.kitchen_id, m.school_id,
+           k.name as kitchen_name, k.code as kitchen_code,
+           s.name as school_name, s.npsn as school_npsn,
            COALESCE(SUM(mc.calories), 0) as total_calories,
            COALESCE(SUM(mc.protein), 0) as total_protein,
            COALESCE(SUM(mc.carbohydrates), 0) as total_carbohydrates,
@@ -113,10 +123,10 @@ export function getMenusByDate(date: string) {
     LEFT JOIN mbg_kitchens k ON m.kitchen_id = k.id
     LEFT JOIN schools s ON m.school_id = s.id
     LEFT JOIN menu_compositions mc ON m.id = mc.menu_id
-    WHERE m.menu_date = ?
-    GROUP BY m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date, k.name, s.name
+    WHERE ${clause}
+    GROUP BY m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date, m.kitchen_id, m.school_id, k.name, k.code, s.name, s.npsn
     ORDER BY m.meal_type
-  `).all(date);
+  `).all(...params);
 }
 
 export function getMenusByWeek(startDate: string, endDate: string) {
@@ -140,8 +150,8 @@ export function getMenusByWeek(startDate: string, endDate: string) {
   `).all(startDate, endDate);
 }
 
-export function getMenuDetail(menuId: number) {
-  return db().prepare(`
+export function getMenuDetail(menuId: number, database?: Database.Database) {
+  return (database ?? db()).prepare(`
     SELECT m.id, m.name, m.meal_type, m.description, m.photo_url, m.menu_date,
            m.kitchen_id, m.school_id,
            k.name as kitchen_name,
@@ -162,8 +172,8 @@ export function getMenuDetail(menuId: number) {
 
 export function getMenuCompositions(menuId: number, database?: Database.Database) {
   return (database ?? db()).prepare(`
-    SELECT mc.id, mc.amount, mc.unit, mc.calories, mc.protein, mc.carbohydrates, mc.fat, mc.fiber,
-           fi.name as food_item_name, fi.default_unit
+    SELECT mc.id, mc.food_item_id, mc.amount, mc.unit, mc.calories, mc.protein, mc.carbohydrates, mc.fiber,
+           mc.fat, fi.name as food_item_name, fi.default_unit
     FROM menu_compositions mc
     JOIN food_items fi ON mc.food_item_id = fi.id
     WHERE mc.menu_id = ?
@@ -679,6 +689,7 @@ export function getKitchenInsightMetrics(kitchenId: number, customDb?: Database.
   const totalIn = financeSum.totalIn > 0 ? financeSum.totalIn : 150000000;
   const totalOut = financeSum.totalOut > 0 ? financeSum.totalOut : 127500000;
   const remaining = totalIn - totalOut;
+  const remainingPercentage = totalIn > 0 ? Math.round((remaining / totalIn) * 10000) / 100 : 0;
   const consistencyRate = 100;
 
   // Corruption & Integrity Insight
@@ -686,11 +697,11 @@ export function getKitchenInsightMetrics(kitchenId: number, customDb?: Database.
     pillar: 'Indikasi Korupsi & Konsistensi Keuangan',
     status: 'Bersih & Transparan',
     riskLevel: 'clean',
-    badge: '0 Indikasi Anomali',
     consistencyRate: consistencyRate,
     totalIn,
     totalOut,
     remaining,
+    remainingPercentage,
     totalInFormatted: `Rp${totalIn.toLocaleString('id-ID')}`,
     totalOutFormatted: `Rp${totalOut.toLocaleString('id-ID')}`,
     remainingFormatted: `Rp${remaining.toLocaleString('id-ID')}`,
@@ -703,39 +714,59 @@ export function getKitchenInsightMetrics(kitchenId: number, customDb?: Database.
     ],
   };
 
-  // Daily Nutrition Fulfillment Insight
+  // Fetch latest menu for this kitchen to get real per-plate nutrition data
+  const latestMenu = database.prepare(`
+    SELECT m.id, m.name, m.meal_type, m.menu_date,
+           COALESCE(SUM(mc.calories), 0) as total_calories,
+           COALESCE(SUM(mc.protein), 0) as total_protein,
+           COALESCE(SUM(mc.carbohydrates), 0) as total_carbohydrates,
+           COALESCE(SUM(mc.fat), 0) as total_fat,
+           COALESCE(SUM(mc.fiber), 0) as total_fiber
+    FROM menus m
+    INNER JOIN menu_compositions mc ON m.id = mc.menu_id
+    WHERE m.kitchen_id = ?
+    GROUP BY m.id
+    ORDER BY m.menu_date DESC, m.id DESC
+    LIMIT 1
+  `).get(kitchenId) as any;
+
+  const menuName = latestMenu ? latestMenu.name : null;
+  const menuDate = latestMenu ? latestMenu.menu_date : null;
+
+  // Per-plate nutrition (from latest menu compositions, already summed per menu = 1 plate)
+  const plateNutrition = latestMenu ? {
+    calories: Math.round(latestMenu.total_calories),
+    protein: Math.round(latestMenu.total_protein * 10) / 10,
+    carbohydrates: Math.round(latestMenu.total_carbohydrates * 10) / 10,
+    fat: Math.round(latestMenu.total_fat * 10) / 10,
+    fiber: Math.round(latestMenu.total_fiber * 10) / 10,
+  } : null;
+
+  // Daily Nutrition Fulfillment Insight (per plate)
   const nutritionInsight = {
-    pillar: 'Pemenuhan Kandungan Gizi Keseharian',
-    status: 'Memenuhi Standar AKG Kemenkes RI',
-    fulfillmentRate: 98.4,
-    badge: '98.4% Terpenuhi',
-    dailyMenu: 'Nasi Pulen, Ayam Panggang Madu, Tumis Brokoli Wortel, Jeruk Manis, Susu Pasteurisasi',
-    macroNutrients: [
-      { name: 'Energi / Kalori', target: '650 kcal', actual: '670 kcal', percentage: 103, status: 'Terpenuhi' },
-      { name: 'Protein Berkualitas', target: '25 g', actual: '27.5 g', percentage: 110, status: 'Tinggi Protein' },
-      { name: 'Karbohidrat Kompleks', target: '80 g', actual: '82 g', percentage: 102, status: 'Sesuai' },
-      { name: 'Lemak Sehat', target: '20 g', actual: '19 g', percentage: 95, status: 'Seimbang' },
-      { name: 'Serat & Mikronutrien', target: '5 g', actual: '5.5 g', percentage: 110, status: 'Kaya Vitamin' },
-    ],
-    notes: 'Kandungan gizi dipantau setiap hari oleh Ahli Gizi Teregistrasi (Nutrisionis SPPG) untuk memastikan kecukupan tumbuh kembang dan konsentrasi belajar siswa.',
+    pillar: 'Kandungan Gizi Per Porsi',
+    status: plateNutrition ? 'Data dari Menu Terbaru' : 'Belum Ada Menu',
+    plateNutrition,
+    menuName,
+    menuDate,
+    notes: 'Kandungan gizi per porsi dihitung dari komposisi bahan makanan pada menu terbaru SPPG.',
   };
 
-  // Sanitation & Hygiene Insight
+  // Sanitation & Hygiene Insight (SLHS)
   const hasSlhs = enriched.slhs;
-  const sanitationScore = hasSlhs ? 96 : 92;
   const sanitationInsight = {
-    pillar: 'Persentase Sanitasi & Kebersihan',
-    status: 'Sangat Baik (Higienis & Sesuai Prokes)',
-    sanitationPercentage: sanitationScore,
-    badge: `${sanitationScore}% Sanitasi & Higiene`,
+    pillar: 'SLHS',
+    status: hasSlhs ? 'Tersertifikasi' : 'Belum Tersertifikasi',
     slhsCertified: hasSlhs,
     slhsCertificateNumber: hasSlhs ? `SLHS-BGN/2026/08-${kitchen.code}` : 'Dalam Proses Perpanjangan',
     slhsAuthority: 'Dinas Kesehatan & Tim Inspeksi Badan Gizi Nasional',
-    checkpoints: [
-      { area: 'Uji Laboratorium Kualitas Air Bersih', score: 100, note: 'Bebas Bakteri E.Coli & Logam Berat' },
-      { area: 'Sterilisasi Alat Masak & Wadah Makanan Food-Grade', score: 98, note: 'Pencucian Suhu 80°C & UV Sterilizer' },
-      { area: 'Higiene Personal Juru Masak (APD & Medical Check)', score: 95, note: 'Masker, Hairnet, Sarung Tangan, Swab Rutin' },
-      { area: 'Sistem Ventilasi & Pemilahan Sampah Organik', score: 92, note: 'Pemisahan Limbah & Saluran Tertutup' },
+    requirements: [
+      { label: 'Sertifikat Laik Higiene Sanitasi (SLHS) dari Dinas Kesehatan', met: hasSlhs },
+      { label: 'Inspeksi berkala CPPOB oleh Badan Gizi Nasional', met: hasSlhs },
+      { label: 'Pengujian kualitas air bersih laboratorium', met: hasSlhs },
+      { label: 'Protokol sterilisasi alat masak & wadah food-grade', met: hasSlhs },
+      { label: 'Higiene personal juru masak (APD, masker, hairnet, swab)', met: hasSlhs },
+      { label: 'Sistem ventilasi & pemilahan sampah organik', met: hasSlhs },
     ],
     notes: 'Dapur SPPG menerapkan protokol Cara Produksi Pangan Olahan yang Baik (CPPOB) dengan inspeksi berkala dari Dinas Kesehatan setempat.',
   };

@@ -66,10 +66,13 @@ export function initCekMbgStory(initialKitchenId: string) {
 
   function animateMetrics(scene: HTMLElement) {
     cancelAnimationFrame(frame);
+    const sanitationRequirements = insights?.sanitationInsight?.requirements ?? [];
     const metrics: Record<string, number | null> = {
       finance: number(insights?.corruptionInsight?.consistencyRate),
-      nutrition: number(insights?.nutritionInsight?.fulfillmentRate),
-      sanitation: number(insights?.sanitationInsight?.sanitationPercentage),
+      nutrition: null,
+      sanitation: sanitationRequirements.length
+        ? Math.round((sanitationRequirements.filter(item => item.met).length / sanitationRequirements.length) * 100)
+        : null,
       safety: number(insights?.poisoningInsight?.caseCount),
     };
     const values = Array.from(scene.querySelectorAll<HTMLElement>('[data-value]'));
@@ -162,16 +165,24 @@ export function initCekMbgStory(initialKitchenId: string) {
     const nutrition = data.nutritionInsight;
     const sanitation = data.sanitationInsight;
     const safety = data.poisoningInsight;
+    const plate = nutrition?.plateNutrition;
     setText('insight-finance-in', finance?.totalInFormatted);
     setText('insight-finance-out', finance?.totalOutFormatted);
     setText('finance-remaining', finance?.remainingFormatted);
-    setText('nutrition-energy', nutrition?.macroNutrients?.[0]?.actual);
-    setText('nutrition-protein', nutrition?.macroNutrients?.[1]?.actual);
-    setText('nutrition-menu', nutrition?.dailyMenu);
-    renderRows('nutrition-details', (nutrition?.macroNutrients ?? []).map(item => [item.name, item.actual + ' / target ' + item.target]));
+    setText('nutrition-energy', plate ? format(plate.calories) + ' kkal' : '—');
+    setText('nutrition-protein', plate ? format(plate.protein) + ' g' : '—');
+    setText('nutrition-menu', nutrition?.menuName ?? 'Menu belum tersedia');
+    const nutritionRows: [string, string][] = plate ? [
+      ['Energi', format(plate.calories) + ' kkal'],
+      ['Protein', format(plate.protein) + ' g'],
+      ['Karbohidrat', format(plate.carbohydrates) + ' g'],
+      ['Lemak', format(plate.fat) + ' g'],
+      ['Serat', format(plate.fiber) + ' g'],
+    ] : [];
+    renderRows('nutrition-details', nutritionRows);
     setText('sanitation-status', sanitation?.slhsCertified === true ? 'Tercatat memiliki SLHS' : sanitation?.slhsCertified === false ? 'Belum terkonfirmasi' : 'Belum tersedia');
     setText('insight-slhs-number', sanitation?.slhsCertificateNumber);
-    renderRows('sanitation-details', (sanitation?.checkpoints ?? []).map(item => [item.area, format(item.score) + '%']));
+    renderRows('sanitation-details', (sanitation?.requirements ?? []).map(item => [item.label, item.met ? 'Terpenuhi' : 'Belum terpenuhi']));
     setText('safety-retention', safety?.sampleRetention);
     renderRows('safety-details', (safety?.safetyProtocols ?? []).map(item => [item.name, item.status]));
     controls();

@@ -30,11 +30,14 @@ test('manual selection leads through four chapters, back navigation, summary, an
   await expect(page.locator('#story-step-insight-1')).toBeVisible();
   await page.locator('#story-next').click();
   await expect(page.locator('#story-step-insight-2')).toBeVisible();
+  await expect(page.locator('#nutrition-energy')).toHaveText('—');
+  await expect(page.locator('#nutrition-menu')).toHaveText('Menu belum tersedia');
   await page.locator('#story-back').click();
   await expect(page.locator('#story-step-insight-1')).toBeVisible();
   for (const next of ['insight-2', 'insight-3', 'insight-4', 'insight-summary']) {
     await page.locator('#story-next').click();
     await expect(page.locator('#story-step-' + next)).toBeVisible();
+    if (next === 'insight-3') await expect(page.locator('#sanitation-details')).toContainText(/Terpenuhi|Belum terpenuhi/);
     await expect(page.locator('#story-next')).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
