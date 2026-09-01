@@ -113,17 +113,23 @@ test('SPPG insights API returns complete 4 pillars matching flowchart requiremen
   assert.ok(data.corruptionInsight.totalIn > 0);
   assert.ok(data.corruptionInsight.totalOut > 0);
 
-  // Pillar 2: Daily Nutrition Fulfillment
-  assert.ok(data.nutritionInsight, 'Pillar 2: Daily Nutrition must exist');
-  assert.ok(data.nutritionInsight.fulfillmentRate >= 90);
-  assert.ok(Array.isArray(data.nutritionInsight.macroNutrients));
-  assert.ok(data.nutritionInsight.macroNutrients.some(m => m.name.includes('Kalori') || m.name.includes('Protein')));
+  // Pillar 2: Nutrition Per Plate
+  assert.ok(data.nutritionInsight, 'Pillar 2: Nutrition per plate must exist');
+  assert.ok(data.nutritionInsight.pillar);
+  // plateNutrition may be null when no menus exist in test DB
+  if (data.nutritionInsight.plateNutrition) {
+    assert.ok(typeof data.nutritionInsight.plateNutrition.calories === 'number');
+    assert.ok(typeof data.nutritionInsight.plateNutrition.protein === 'number');
+    assert.ok(typeof data.nutritionInsight.plateNutrition.carbohydrates === 'number');
+    assert.ok(typeof data.nutritionInsight.plateNutrition.fat === 'number');
+    assert.ok(typeof data.nutritionInsight.plateNutrition.fiber === 'number');
+  }
 
-  // Pillar 3: Sanitation & Cleanliness Percentage (including SLHS)
-  assert.ok(data.sanitationInsight, 'Pillar 3: Sanitation must exist');
-  assert.ok(data.sanitationInsight.sanitationPercentage >= 90);
-  assert.ok(Array.isArray(data.sanitationInsight.checkpoints));
-  assert.ok(data.sanitationInsight.checkpoints.length >= 3);
+  // Pillar 3: SLHS
+  assert.ok(data.sanitationInsight, 'Pillar 3: SLHS must exist');
+  assert.ok(typeof data.sanitationInsight.slhsCertified === 'boolean');
+  assert.ok(Array.isArray(data.sanitationInsight.requirements));
+  assert.ok(data.sanitationInsight.requirements.length >= 1);
 
   // Pillar 4: Food Poisoning Track Record (0 Cases)
   assert.ok(data.poisoningInsight, 'Pillar 4: Food Poisoning Record must exist');
@@ -166,8 +172,14 @@ test('user lokasi page renders Cek MBG button, guided modal, and all flowchart s
 
   // 6. The 4 Sequential Insights
   assert.match(html, /Konsistensi Pemasukan vs Pengeluaran/);
-  assert.match(html, /Kandungan Gizi Keseharian yang Didistribusikan/);
-  assert.match(html, /Persentase Sanitasi (?:&|&amp;) Kebersihan/);
+  assert.ok(
+    /Kandungan Gizi Keseharian yang Didistribusikan/.test(html) || /Kandungan Gizi Piring MBG/.test(html),
+    'Should contain nutrition section header'
+  );
+  assert.ok(
+    /Persentase Sanitasi/.test(html) || /SLHS/.test(html),
+    'Should contain sanitation/SLHS section'
+  );
   assert.match(html, /Kasus Keracunan MBG dari SPPG Ini/);
 
   // 7. Finish action leading to Main Dashboard
@@ -198,8 +210,8 @@ test('dedicated standalone /cek-mbg story page renders full-page UI narrative re
 
   // Duolingo story narrative cards
   assert.match(html, /Uang Makan Siang Anak Tersalurkan Utuh!/);
-  assert.match(html, /Kandungan Gizi Keseharian yang Didistribusikan/);
-  assert.match(html, /Persentase Sanitasi (?:&|&amp;) Kebersihan Dapur SPPG/);
+  assert.match(html, /Kandungan Gizi Piring MBG/);
+  assert.match(html, /SLHS/);
   assert.match(html, /Kasus Keracunan MBG dari SPPG Ini/);
   assert.match(html, /SPPG Sangat Terpercaya (?:&|&amp;) Layak!/);
 

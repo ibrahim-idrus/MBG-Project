@@ -31,7 +31,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           </div>
           <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
           <div class="absolute right-6 top-1/2 -translate-y-1/2 hidden md:block opacity-20 pointer-events-none">
-            <span class="material-symbols-outlined text-9xl">health_and_safety</span>
+            <i data-lucide="shield-check" class="w-24 h-24 stroke-[1.5]"></i>
           </div>
         </div>
 
@@ -41,8 +41,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           {/* STEP 1: Permission / Location Choice */}
           <div id="story-step-permission" class="space-y-6">
             <div class="text-center max-w-md mx-auto py-4">
-              <div class="w-16 h-16 rounded-3xl bg-primary-container text-on-primary-container flex items-center justify-center mx-auto mb-4 shadow-inner text-3xl">
-                📍
+              <div class="w-16 h-16 rounded-3xl bg-primary-container text-on-primary-container flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <i data-lucide="map-pin" class="w-8 h-8"></i>
               </div>
               <h2 class="text-xl sm:text-2xl font-extrabold text-on-surface mb-2">
                 Izinkan Akses Lokasi?
@@ -58,7 +58,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.handleAllowLocation()"
                   class="flex items-center justify-center gap-2 bg-primary hover:bg-[#3E2B82] text-white py-3.5 px-5 rounded-2xl font-extrabold text-sm shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all"
                 >
-                  <span class="material-symbols-outlined text-[18px]">near_me</span>
+                  <i data-lucide="locate" class="w-[18px] h-[18px]"></i>
                   Ya, Izinkan Lokasi
                 </button>
                 <button
@@ -67,7 +67,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.handleDenyLocation()"
                   class="flex items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface border-2 border-surface-variant py-3.5 px-5 rounded-2xl font-bold text-sm shadow-[0_3px_0_theme(colors.surface-variant)] active:translate-y-1 active:shadow-none transition-all"
                 >
-                  <span class="material-symbols-outlined text-[18px]">edit_location</span>
+                  <i data-lucide="map-pinned" class="w-[18px] h-[18px]"></i>
                   Tidak, Pilih Manual
                 </button>
               </div>
@@ -78,8 +78,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           <div id="story-step-loading" class="hidden text-center py-12 space-y-4">
             <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
               <div class="absolute inset-0 rounded-full bg-primary/20 animate-ping"></div>
-              <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-lg text-2xl">
-                🔍
+              <div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
+                <i data-lucide="search" class="w-8 h-8"></i>
               </div>
             </div>
             <div class="space-y-1">
@@ -106,7 +106,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('permission')"
                 class="text-xs text-on-surface-variant hover:text-on-surface flex items-center gap-1 font-medium"
               >
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Kembali
               </button>
             </div>
@@ -181,7 +181,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   type="submit"
                   class="bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-sm px-7 py-3 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                 >
-                  <span class="material-symbols-outlined text-[18px]">search</span>
+                  <i data-lucide="search" class="w-[18px] h-[18px]"></i>
                   Tampilkan SPPG Wilayah Ini
                 </button>
               </div>
@@ -192,7 +192,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           <div id="story-step-sppg-result" class="hidden space-y-6">
             <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70 flex items-center justify-between">
               <div class="flex items-center gap-2.5">
-                <span class="material-symbols-outlined text-primary text-[22px]">location_on</span>
+                <i data-lucide="map-pin" class="w-[22px] h-[22px] text-primary"></i>
                 <div>
                   <span class="text-[11px] text-on-surface-variant block">Wilayah Terdeteksi:</span>
                   <span class="font-extrabold text-xs sm:text-sm text-on-surface" id="sppg-result-location-label">-</span>
@@ -222,8 +222,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                     KODE-001
                   </p>
                 </div>
-                <div class="w-14 h-14 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center text-3xl shadow">
-                  🍲
+                <div class="w-14 h-14 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center shadow">
+                  <i data-lucide="cooking-pot" class="w-7 h-7"></i>
                 </div>
               </div>
 
@@ -247,7 +247,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
               </div>
 
               <div class="text-xs text-on-surface-variant flex items-start gap-2">
-                <span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">home_pin</span>
+                <i data-lucide="home" class="w-4 h-4 mt-0.5 shrink-0"></i>
                 <span id="sppg-card-address">-</span>
               </div>
             </div>
@@ -256,7 +256,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             <div class="bg-surface-bright rounded-3xl p-6 border-2 border-primary/20 space-y-4">
               <div class="space-y-1">
                 <h4 class="font-extrabold text-base text-on-surface flex items-center gap-2">
-                  <span class="text-xl">📖</span>
+                  <i data-lucide="book-open" class="w-5 h-5 text-primary"></i>
                   Ingin Membaca Laporan Cerita Transparansi SPPG Ini?
                 </h4>
                 <p class="text-xs text-on-surface-variant leading-relaxed">
@@ -271,8 +271,9 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.startInsightsTour()"
                   class="flex items-center justify-center gap-2 bg-primary hover:bg-[#3E2B82] text-white py-3.5 px-5 rounded-2xl font-extrabold text-sm shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all"
                 >
-                  <span class="material-symbols-outlined text-[18px]">auto_stories</span>
-                  <span>Mulai Baca Cerita MBG ➔</span>
+                  <i data-lucide="book-open-check" class="w-[18px] h-[18px]"></i>
+                  <span>Mulai Baca Cerita MBG</span>
+                  <i data-lucide="arrow-right" class="w-[18px] h-[18px]"></i>
                 </button>
                 <button
                   type="button"
@@ -280,7 +281,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.redirectToDashboard()"
                   class="flex items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface border-2 border-surface-variant py-3.5 px-5 rounded-2xl font-bold text-sm shadow-[0_3px_0_theme(colors.surface-variant)] active:translate-y-1 active:shadow-none transition-all"
                 >
-                  <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                  <i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i>
                   <span>Lewati Insight (Ke Dashboard)</span>
                 </button>
               </div>
@@ -293,7 +294,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             <div class="space-y-2">
               <div class="flex items-center justify-between text-xs">
                 <span class="font-extrabold text-primary flex items-center gap-1.5">
-                  <span class="text-base">🛡️</span>
+                  <i data-lucide="wallet" class="w-5 h-5"></i>
                   Cerita 1 dari 4: Kawal Anggaran MBG
                 </span>
                 <span class="font-bold text-on-surface-variant">25% Selesai</span>
@@ -309,12 +310,12 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             {/* Character Speech Bubble Banner */}
             <div class="bg-gradient-to-r from-primary-fixed/40 via-surface-bright to-primary-fixed/20 rounded-3xl p-6 border-2 border-primary/20 relative shadow-sm">
               <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center text-3xl shadow-md shrink-0">
-                  🛡️
+                <div class="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-md shrink-0">
+                  <i data-lucide="wallet" class="w-7 h-7"></i>
                 </div>
                 <div class="space-y-1.5">
                   <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">
-                    <span class="material-symbols-outlined text-[14px]">verified</span>
+                    <i data-lucide="badge-check" class="w-[14px] h-[14px]"></i>
                     100% Konsistensi Pemasukan vs Pengeluaran
                   </div>
                   <h3 class="font-extrabold text-lg sm:text-xl text-on-surface">
@@ -341,9 +342,9 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">Kwitansi Digital</span>
                 </div>
                 <div class="bg-surface-container-low p-4 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-primary/30 transition-colors">
-                  <span class="text-xs text-on-surface-variant block mb-1">Indeks Integritas</span>
-                  <span class="font-extrabold text-base text-green-600 block">0 Indikasi Anomali</span>
-                  <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">100% Sesuai SPJ</span>
+                  <span class="text-xs text-on-surface-variant block mb-1">Persentase Sisa Dana</span>
+                  <span class="font-extrabold text-base text-on-surface block" id="insight-finance-remaining-pct">15%</span>
+                  <span class="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold" id="insight-finance-remaining-amt">Sisa Rp22.500.000</span>
                 </div>
               </div>
 
@@ -380,7 +381,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('sppg-result')"
                 class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
               >
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Kembali
               </button>
               <div class="flex items-center gap-2">
@@ -396,8 +397,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.goToStep('insight-2')"
                   class="bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-sm px-6 py-3.5 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                 >
-                  <span>Lanjut: Cek Piring Gizi 🥗</span>
-                  <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span>Lanjut: Cek Piring Gizi</span>
+                  <i data-lucide="arrow-right" class="w-[18px] h-[18px]"></i>
                 </button>
               </div>
             </div>
@@ -409,7 +410,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             <div class="space-y-2">
               <div class="flex items-center justify-between text-xs">
                 <span class="font-extrabold text-primary flex items-center gap-1.5">
-                  <span class="text-base">🥗</span>
+                  <i data-lucide="utensils" class="w-5 h-5"></i>
                   Cerita 2 dari 4: Piring Gizi Juara
                 </span>
                 <span class="font-bold text-on-surface-variant">50% Selesai</span>
@@ -425,16 +426,16 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             {/* Character Speech Bubble Banner */}
             <div class="bg-gradient-to-r from-blue-500/10 via-surface-bright to-blue-500/5 rounded-3xl p-6 border-2 border-blue-200 dark:border-blue-900/40 relative shadow-sm">
               <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-3xl shadow-md shrink-0">
-                  🥗
+                <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
+                  <i data-lucide="utensils" class="w-7 h-7"></i>
                 </div>
                 <div class="space-y-1.5">
                   <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                    <span class="material-symbols-outlined text-[14px]">restaurant_menu</span>
-                    98.4% Terpenuhi Sesuai Standar AKG
+                    <i data-lucide="salad" class="w-[14px] h-[14px]"></i>
+                    Kandungan Gizi Per Porsi (1 Piring)
                   </div>
-                  <h3 class="font-extrabold text-lg sm:text-xl text-on-surface">
-                    Kandungan Gizi Keseharian yang Didistribusikan
+                  <h3 class="font-extrabold text-lg sm:text-xl text-on-surface" id="insight-nutrition-title">
+                    Kandungan Gizi Piring MBG
                   </h3>
                   <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
                     Menu makan siang dirancang oleh nutrisionis bersertifikat agar anak-anak kenyang, sehat, dan berenergi tinggi untuk fokus belajar sepanjang hari di sekolah.
@@ -443,41 +444,63 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
               </div>
             </div>
 
-            {/* Duolingo Visual Report Card */}
+            {/* Per-Plate Nutrition Report Card */}
             <div class="space-y-3">
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
-                  <span class="text-xs text-on-surface-variant block mb-1">🍗 Protein Pembangun</span>
-                  <span class="font-extrabold text-lg text-primary block">27.5 g</span>
-                  <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Target: 25g (110%)</span>
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="flame" class="w-4 h-4 text-orange-500"></i>
+                    <span class="text-xs text-on-surface-variant">Kalori</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-calories">- kcal</span>
                 </div>
                 <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
-                  <span class="text-xs text-on-surface-variant block mb-1">🍚 Energi Kalori</span>
-                  <span class="font-extrabold text-lg text-primary block">670 kcal</span>
-                  <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Pas untuk Belajar</span>
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="beef" class="w-4 h-4 text-red-500"></i>
+                    <span class="text-xs text-on-surface-variant">Protein</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-protein">- g</span>
                 </div>
                 <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
-                  <span class="text-xs text-on-surface-variant block mb-1">🥦 Serat & Vitamin</span>
-                  <span class="font-extrabold text-lg text-primary block">5.5 g</span>
-                  <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Sayur Segar Lokal</span>
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="wheat" class="w-4 h-4 text-amber-600"></i>
+                    <span class="text-xs text-on-surface-variant">Karbohidrat</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-carbs">- g</span>
                 </div>
                 <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
-                  <span class="text-xs text-on-surface-variant block mb-1">🥑 Karbo & Lemak Baik</span>
-                  <span class="font-extrabold text-lg text-primary block">82g / 19g</span>
-                  <span class="text-[10px] text-green-600 font-semibold block mt-0.5">Keseimbangan Otak</span>
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="droplets" class="w-4 h-4 text-yellow-500"></i>
+                    <span class="text-xs text-on-surface-variant">Lemak</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-fat">- g</span>
+                </div>
+                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="sprout" class="w-4 h-4 text-green-600"></i>
+                    <span class="text-xs text-on-surface-variant">Serat</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-fiber">- g</span>
+                </div>
+                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/80 text-center hover:border-blue-300 transition-colors">
+                  <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <i data-lucide="pill" class="w-4 h-4 text-purple-500"></i>
+                    <span class="text-xs text-on-surface-variant">Vitamin</span>
+                  </div>
+                  <span class="font-extrabold text-lg text-primary block" id="ins-plate-vitamins">-</span>
                 </div>
               </div>
 
               {/* Sample Plate Card */}
               <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="text-base">🍱</span>
+                  <i data-lucide="chef-hat" class="w-5 h-5 text-primary"></i>
                   <span class="text-xs font-bold text-on-surface uppercase tracking-wider">
-                    Contoh Sajian Piring Gizi Hari Ini:
+                    Menu Hari Ini:
                   </span>
                 </div>
-                <p class="text-xs text-on-surface font-medium leading-relaxed bg-surface-container-lowest p-3 rounded-xl border border-surface-variant/40">
-                  Nasi Pulen Organik, Ayam Panggang Kecap Madu, Tumis Brokoli & Jagung Manis, Pisang Raja Segar, dan Susu Pasteurisasi Berkalsium Tinggi.
+                <p class="text-xs text-on-surface font-medium leading-relaxed bg-surface-container-lowest p-3 rounded-xl border border-surface-variant/40" id="insight-menu-name">
+                  Memuat menu terbaru...
                 </p>
               </div>
             </div>
@@ -489,7 +512,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('insight-1')"
                 class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
               >
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Kembali
               </button>
               <div class="flex items-center gap-2">
@@ -505,8 +528,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.goToStep('insight-3')"
                   class="bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-sm px-6 py-3.5 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                 >
-                  <span>Lanjut: Cek Sanitasi Dapur ✨</span>
-                  <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span>Lanjut: Cek Sanitasi Dapur</span>
+                  <i data-lucide="arrow-right" class="w-[18px] h-[18px]"></i>
                 </button>
               </div>
             </div>
@@ -518,7 +541,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             <div class="space-y-2">
               <div class="flex items-center justify-between text-xs">
                 <span class="font-extrabold text-primary flex items-center gap-1.5">
-                  <span class="text-base">✨</span>
+                  <i data-lucide="shield-check" class="w-5 h-5"></i>
                   Cerita 3 dari 4: Dapur Bersih & SLHS
                 </span>
                 <span class="font-bold text-on-surface-variant">75% Selesai</span>
@@ -534,16 +557,16 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             {/* Character Speech Bubble Banner */}
             <div class="bg-gradient-to-r from-purple-500/10 via-surface-bright to-purple-500/5 rounded-3xl p-6 border-2 border-purple-200 dark:border-purple-900/40 relative shadow-sm">
               <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-purple-700 text-white flex items-center justify-center text-3xl shadow-md shrink-0">
-                  ✨
+                <div class="w-14 h-14 rounded-2xl bg-purple-700 text-white flex items-center justify-center shadow-md shrink-0">
+                  <i data-lucide="badge-check" class="w-7 h-7"></i>
                 </div>
                 <div class="space-y-1.5">
                   <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
-                    <span class="material-symbols-outlined text-[14px]">clean_hands</span>
-                    Tingkat Sanitasi: 96% (Sangat Baik)
+                    <i data-lucide="shield-check" class="w-[14px] h-[14px]"></i>
+                    <span id="insight-slhs-badge">SLHS</span>
                   </div>
                   <h3 class="font-extrabold text-lg sm:text-xl text-on-surface">
-                    Persentase Sanitasi & Kebersihan Dapur SPPG
+                    SLHS
                   </h3>
                   <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
                     Dapur memasak berstandar higienis layaknya masakan ibu di rumah, telah mengantongi Sertifikat Laik Higiene Sanitasi (SLHS) resmi dari Dinas Kesehatan.
@@ -558,55 +581,26 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
               <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border-2 border-primary/30 flex items-center justify-between shadow-sm">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow">
-                    <span class="material-symbols-outlined text-[22px]">verified_user</span>
+                    <i data-lucide="badge-check" class="w-[22px] h-[22px]"></i>
                   </div>
                   <div>
                     <span class="text-xs font-extrabold text-on-surface block">Sertifikat Laik Higiene Sanitasi (SLHS)</span>
                     <span class="text-[11px] text-primary font-mono font-semibold" id="insight-slhs-number">Tersertifikasi Resmi BGN & Dinkes</span>
                   </div>
                 </div>
-                <span class="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-extrabold shadow-sm">
-                  Terverifikasi
+                <span class="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-extrabold shadow-sm" id="insight-slhs-status-badge">
+                  Aktif
                 </span>
               </div>
 
-              {/* 4 Cleanliness Checkpoints */}
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
-                  <div class="flex items-center justify-between text-xs mb-1">
-                    <span class="font-bold text-on-surface flex items-center gap-1.5">
-                      <span class="text-base">💧</span> Uji Lab Kualitas Air
-                    </span>
-                    <span class="font-extrabold text-green-600">100% Lolos</span>
-                  </div>
-                  <p class="text-[11px] text-on-surface-variant">Bebas bakteri E.Coli, logam berat, & klorin berlebih.</p>
+              {/* SLHS Requirements Checklist */}
+              <div class="bg-surface-bright rounded-2xl p-4 border border-surface-variant/70 space-y-2">
+                <div class="text-xs font-bold text-on-surface mb-2 flex items-center gap-1.5">
+                  <i data-lucide="list-checks" class="w-4 h-4 text-primary"></i>
+                  Persyaratan SLHS
                 </div>
-                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
-                  <div class="flex items-center justify-between text-xs mb-1">
-                    <span class="font-bold text-on-surface flex items-center gap-1.5">
-                      <span class="text-base">🍽️</span> Sterilisasi Alat & Wadah
-                    </span>
-                    <span class="font-extrabold text-green-600">98% Steril</span>
-                  </div>
-                  <p class="text-[11px] text-on-surface-variant">Pencucian suhu tinggi dengan wadah food-grade aman.</p>
-                </div>
-                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
-                  <div class="flex items-center justify-between text-xs mb-1">
-                    <span class="font-bold text-on-surface flex items-center gap-1.5">
-                      <span class="text-base">👨‍🍳</span> Higiene Juru Masak (APD)
-                    </span>
-                    <span class="font-extrabold text-green-600">95% Patuh</span>
-                  </div>
-                  <p class="text-[11px] text-on-surface-variant">Wajib masker, hairnet, sarung tangan, & swab berkala.</p>
-                </div>
-                <div class="bg-surface-container-low p-3.5 rounded-2xl border-2 border-surface-variant/70 hover:border-primary/30 transition-colors">
-                  <div class="flex items-center justify-between text-xs mb-1">
-                    <span class="font-bold text-on-surface flex items-center gap-1.5">
-                      <span class="text-base">🗑️</span> Pengelolaan Limbah Dapur
-                    </span>
-                    <span class="font-extrabold text-green-600">92% Bersih</span>
-                  </div>
-                  <p class="text-[11px] text-on-surface-variant">Pemisahan sampah organik & saluran tertutup higienis.</p>
+                <div id="insight-slhs-checklist" class="space-y-1.5">
+                  {/* Populated by JS from API data */}
                 </div>
               </div>
             </div>
@@ -618,7 +612,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('insight-2')"
                 class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
               >
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Kembali
               </button>
               <div class="flex items-center gap-2">
@@ -634,8 +628,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                   onclick="window.goToStep('insight-4')"
                   class="bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-sm px-6 py-3.5 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
                 >
-                  <span>Lanjut: Rekam Jejak Keamanan 🛡️</span>
-                  <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span>Lanjut: Rekam Jejak Keamanan</span>
+                  <i data-lucide="arrow-right" class="w-[18px] h-[18px]"></i>
                 </button>
               </div>
             </div>
@@ -647,7 +641,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             <div class="space-y-2">
               <div class="flex items-center justify-between text-xs">
                 <span class="font-extrabold text-primary flex items-center gap-1.5">
-                  <span class="text-base">🛡️</span>
+                  <i data-lucide="shield-check" class="w-5 h-5"></i>
                   Cerita 4 dari 4: Rekam Jejak Bebas Keracunan
                 </span>
                 <span class="font-bold text-on-surface-variant">100% Selesai</span>
@@ -663,12 +657,12 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             {/* Character Speech Bubble Banner */}
             <div class="bg-gradient-to-r from-emerald-500/10 via-surface-bright to-emerald-500/5 rounded-3xl p-6 border-2 border-emerald-200 dark:border-emerald-900/40 relative shadow-sm">
               <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-3xl shadow-md shrink-0">
-                  🛡️
+                <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shrink-0">
+                  <i data-lucide="shield-alert" class="w-7 h-7"></i>
                 </div>
                 <div class="space-y-1.5">
                   <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300">
-                    <span class="material-symbols-outlined text-[14px]">shield_with_heart</span>
+                    <i data-lucide="heart-handshake" class="w-[14px] h-[14px]"></i>
                     0 Kasus Keracunan Dilaporkan (100% Aman)
                   </div>
                   <h3 class="font-extrabold text-lg sm:text-xl text-on-surface">
@@ -734,7 +728,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('insight-3')"
                 class="text-xs text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1 px-3 py-2 rounded-xl"
               >
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 Kembali
               </button>
               <button
@@ -742,8 +736,8 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.goToStep('insight-summary')"
                 class="bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-sm px-7 py-3.5 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2"
               >
-                <span>Lihat Rapor Akhir! 🏆</span>
-                <span class="material-symbols-outlined text-[18px]">emoji_events</span>
+                <span>Lihat Rapor Akhir!</span>
+                <i data-lucide="trophy" class="w-[18px] h-[18px]"></i>
               </button>
             </div>
           </div>
@@ -751,13 +745,18 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           {/* STEP 8: Celebratory Final Summary Card (Scorecard & Redirection to Dashboard) */}
           <div id="story-step-insight-summary" class="hidden space-y-6 animate-in fade-in zoom-in-95 duration-200 text-center py-2">
             {/* Trophy Avatar */}
-            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950 flex items-center justify-center mx-auto shadow-lg text-4xl animate-bounce">
-              🏆
+            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950 flex items-center justify-center mx-auto shadow-lg animate-bounce">
+              <i data-lucide="trophy" class="w-10 h-10"></i>
             </div>
 
             <div class="space-y-1.5 max-w-md mx-auto">
               <div class="inline-flex items-center gap-1 px-3.5 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900">
-                ⭐⭐⭐⭐⭐ SPPG Bintang 5
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+                <span class="ml-1">SPPG Bintang 5</span>
               </div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-on-surface">
                 SPPG Sangat Terpercaya & Layak!
@@ -770,22 +769,22 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             {/* 4-Pillar Scorecard Grid */}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto">
               <div class="bg-surface-container-low p-3.5 rounded-2xl border border-surface-variant/70 text-center shadow-sm">
-                <span class="text-2xl block">🪙</span>
+                <i data-lucide="wallet-cards" class="w-7 h-7 mx-auto text-primary"></i>
                 <span class="text-xs text-on-surface-variant block mt-1">Keuangan</span>
                 <span class="font-extrabold text-xs text-green-700 block">100% Bersih</span>
               </div>
               <div class="bg-surface-container-low p-3.5 rounded-2xl border border-surface-variant/70 text-center shadow-sm">
-                <span class="text-2xl block">🥗</span>
+                <i data-lucide="utensils" class="w-7 h-7 mx-auto text-primary"></i>
                 <span class="text-xs text-on-surface-variant block mt-1">Gizi AKG</span>
-                <span class="font-extrabold text-xs text-green-700 block">98.4% Sesuai</span>
+                <span class="font-extrabold text-xs text-green-700 block">Terkini</span>
               </div>
               <div class="bg-surface-container-low p-3.5 rounded-2xl border border-surface-variant/70 text-center shadow-sm">
-                <span class="text-2xl block">✨</span>
+                <i data-lucide="shield-check" class="w-7 h-7 mx-auto text-primary"></i>
                 <span class="text-xs text-on-surface-variant block mt-1">Sanitasi</span>
-                <span class="font-extrabold text-xs text-green-700 block">96% (SLHS)</span>
+                <span class="font-extrabold text-xs text-green-700 block" id="summary-slhs-label">SLHS</span>
               </div>
               <div class="bg-surface-container-low p-3.5 rounded-2xl border border-surface-variant/70 text-center shadow-sm">
-                <span class="text-2xl block">🛡️</span>
+                <i data-lucide="shield-alert" class="w-7 h-7 mx-auto text-primary"></i>
                 <span class="text-xs text-on-surface-variant block mt-1">Keamanan</span>
                 <span class="font-extrabold text-xs text-green-700 block">0 Kasus (Aman)</span>
               </div>
@@ -799,15 +798,16 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 onclick="window.redirectToDashboard()"
                 class="w-full bg-primary hover:bg-[#3E2B82] text-white font-extrabold text-base py-4 px-6 rounded-2xl shadow-[0_4px_0_#2E1E66] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2"
               >
-                <span class="material-symbols-outlined text-[22px]">dashboard</span>
-                <span>Buka Dashboard Utama SPPG 🚀</span>
+                <i data-lucide="layout-dashboard" class="w-[22px] h-[22px]"></i>
+                <span>Buka Dashboard Utama SPPG</span>
+                <i data-lucide="arrow-right" class="w-[22px] h-[22px]"></i>
               </button>
               <button
                 type="button"
                 onclick="window.goToStep('insight-1')"
                 class="text-xs text-primary font-bold hover:underline py-2 flex items-center justify-center gap-1 mx-auto"
               >
-                <span class="material-symbols-outlined text-[16px]">refresh</span>
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 <span>Ulangi Baca Cerita Laporan</span>
               </button>
             </div>
@@ -824,6 +824,12 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
           let currentInsights = null;
           let currentSelectedLocation = null;
           const initialKitchenId = ${JSON.stringify(initialKitchenId || '')};
+
+          function renderIcons() {
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+            }
+          }
 
           window.goToStep = function(stepName) {
             const steps = [
@@ -847,6 +853,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
             if (targetEl) {
               targetEl.classList.remove('hidden');
               targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              setTimeout(renderIcons, 50);
             }
           };
 
@@ -1048,6 +1055,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
 
             window.goToStep('sppg-result');
             loadInsights(kitchen.id);
+            renderIcons();
           }
 
           async function loadInsights(kitchenId) {
@@ -1058,16 +1066,77 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
                 currentInsights = data.data;
                 const finIn = document.getElementById('insight-finance-in');
                 const finOut = document.getElementById('insight-finance-out');
+                const finRemPct = document.getElementById('insight-finance-remaining-pct');
+                const finRemAmt = document.getElementById('insight-finance-remaining-amt');
                 const slhsNum = document.getElementById('insight-slhs-number');
+                const slhsBadge = document.getElementById('insight-slhs-badge');
+                const slhsStatusBadge = document.getElementById('insight-slhs-status-badge');
+                const slhsChecklist = document.getElementById('insight-slhs-checklist');
+                const summarySlhsLabel = document.getElementById('summary-slhs-label');
+                const nutritionTitle = document.getElementById('insight-nutrition-title');
+                const menuNameEl = document.getElementById('insight-menu-name');
 
+                // Pillar 1: Fund percentage
                 if (finIn && currentInsights.corruptionInsight) {
                   finIn.innerText = currentInsights.corruptionInsight.totalInFormatted;
                 }
                 if (finOut && currentInsights.corruptionInsight) {
                   finOut.innerText = currentInsights.corruptionInsight.totalOutFormatted;
                 }
-                if (slhsNum && currentInsights.sanitationInsight) {
-                  slhsNum.innerText = currentInsights.sanitationInsight.slhsCertificateNumber;
+                if (finRemPct && currentInsights.corruptionInsight) {
+                  finRemPct.innerText = currentInsights.corruptionInsight.remainingPercentage + '%';
+                }
+                if (finRemAmt && currentInsights.corruptionInsight) {
+                  finRemAmt.innerText = 'Sisa ' + currentInsights.corruptionInsight.remainingFormatted;
+                }
+
+                // Pillar 2: Nutrition per plate
+                if (currentInsights.nutritionInsight) {
+                  const ni = currentInsights.nutritionInsight;
+                  if (nutritionTitle && ni.menuName) {
+                    nutritionTitle.innerText = 'Kandungan Gizi Piring MBG';
+                  }
+                  if (menuNameEl) {
+                    menuNameEl.innerText = ni.menuName ? (ni.menuName + (ni.menuDate ? ' (' + ni.menuDate + ')' : '')) : 'Belum ada menu terbaru';
+                  }
+                  if (ni.plateNutrition) {
+                    var pn = ni.plateNutrition;
+                    var calEl = document.getElementById('ins-plate-calories');
+                    var protEl = document.getElementById('ins-plate-protein');
+                    var carbEl = document.getElementById('ins-plate-carbs');
+                    var fatEl = document.getElementById('ins-plate-fat');
+                    var fiberEl = document.getElementById('ins-plate-fiber');
+                    var vitEl = document.getElementById('ins-plate-vitamins');
+                    if (calEl) calEl.innerText = pn.calories + ' kcal';
+                    if (protEl) protEl.innerText = pn.protein + ' g';
+                    if (carbEl) carbEl.innerText = pn.carbohydrates + ' g';
+                    if (fatEl) fatEl.innerText = pn.fat + ' g';
+                    if (fiberEl) fiberEl.innerText = pn.fiber + ' g';
+                    if (vitEl) vitEl.innerText = 'Tersedia';
+                  }
+                }
+
+                // Pillar 3: SLHS
+                if (currentInsights.sanitationInsight) {
+                  var si = currentInsights.sanitationInsight;
+                  if (slhsNum) slhsNum.innerText = si.slhsCertificateNumber;
+                  if (slhsBadge) slhsBadge.innerText = si.slhsCertified ? 'SLHS Tersertifikasi' : 'SLHS';
+                  if (slhsStatusBadge) {
+                    slhsStatusBadge.innerText = si.slhsCertified ? 'Aktif' : 'Dalam Proses';
+                    slhsStatusBadge.className = si.slhsCertified
+                      ? 'px-3 py-1 bg-green-600 text-white rounded-full text-xs font-extrabold shadow-sm'
+                      : 'px-3 py-1 bg-amber-500 text-white rounded-full text-xs font-extrabold shadow-sm';
+                  }
+                  if (summarySlhsLabel) summarySlhsLabel.innerText = si.slhsCertified ? 'SLHS Aktif' : 'SLHS';
+
+                  if (slhsChecklist && si.requirements) {
+                    slhsChecklist.innerHTML = si.requirements.map(function(req) {
+                      return '<div class="flex items-center gap-2 text-xs ' + (req.met ? 'text-on-surface' : 'text-on-surface-variant') + '">'
+                        + '<span class="w-5 h-5 rounded-full ' + (req.met ? 'bg-green-100 text-green-700' : 'bg-surface-container-high text-on-surface-variant') + ' flex items-center justify-center text-xs font-bold shrink-0">' + (req.met ? '✓' : '—') + '</span>'
+                        + '<span>' + req.label + '</span>'
+                        + '</div>';
+                    }).join('');
+                  }
                 }
               }
             } catch (e) {
@@ -1089,6 +1158,7 @@ export const CekMbgPage: FC<CekMbgPageProps> = ({ db, initialKitchenId }) => {
 
           // Initialize
           loadHierarchy();
+          renderIcons();
 
           // Auto-load if initialKitchenId is provided
           if (initialKitchenId) {

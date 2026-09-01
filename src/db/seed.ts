@@ -163,7 +163,36 @@ export function seedDatabase(): void {
     adminId = result.lastInsertRowid as number;
     console.log(`✓ Admin account created (ID: ${adminId})`);
   }
-  
+
+  // Ensure the admin is linked to the first available kitchen so they can manage
+  // aspirations for that kitchen. If a different admin already has the only link
+  // to that kitchen, the unique constraint prevents duplication; in that case
+  // the per-admin backfill below still ensures the seeded admin has at least
+  // one kitchen assigned.
+  const firstKitchen = db.prepare('SELECT id FROM mbg_kitchens ORDER BY id ASC LIMIT 1').get() as { id: number } | undefined;
+  if (firstKitchen) {
+    db.prepare('INSERT OR IGNORE INTO admin_kitchens (admin_id, kitchen_id) VALUES (?, ?)').run(adminId, firstKitchen.id);
+  }
+
+  // Self-heal: ensure every active admin has at least one kitchen link, so
+  // admin scoping in the aspirations API never silently returns an empty list.
+  const orphanAdmins = db
+    .prepare(
+      `SELECT a.id FROM admins a
+         WHERE a.status = 'active'
+           AND NOT EXISTS (SELECT 1 FROM admin_kitchens ak WHERE ak.admin_id = a.id)`
+    )
+    .all() as { id: number }[];
+  for (const orphan of orphanAdmins) {
+    const link = db
+      .prepare(
+        `INSERT OR IGNORE INTO admin_kitchens (admin_id, kitchen_id)
+         SELECT ?, id FROM mbg_kitchens WHERE status = 'active' ORDER BY id ASC LIMIT 1`
+      )
+      .run(orphan.id);
+    if (link.changes) console.log(`✓ Backfilled kitchen link for admin ${orphan.id}`);
+  }
+
   // Seed menus (idempotent - skip if data exists)
   const menuCount = db.prepare('SELECT COUNT(*) as count FROM menus').get() as { count: number };
   

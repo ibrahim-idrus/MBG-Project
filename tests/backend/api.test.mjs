@@ -33,18 +33,29 @@ test('menu CRUD validates kitchen-school relationship and uses session admin as 
   const { app, db, sessionCookie, admin } = createTestAppWithSession();
   const { kitchenId, otherKitchenId, schoolId } = addLocations(db);
 
+  // The admin must be linked to a kitchen before they can create menus.
+  db.prepare('INSERT INTO admin_kitchens (admin_id, kitchen_id) VALUES (?, ?)').run(admin.id, kitchenId);
+
   // Seed a food item for compositions
   db.prepare(`INSERT INTO food_items (name, default_unit, calories_per_100g, protein_per_100g, carbohydrates_per_100g, fat_per_100g, fiber_per_100g) VALUES (?, ?, ?, ?, ?, ?, ?)`).run('Nasi Putih', 'g', 130, 2.7, 28.2, 0.3, 0.4);
   const foodItemId = db.prepare('SELECT id FROM food_items WHERE name = ?').get('Nasi Putih').id;
 
+  // The school only belongs to the first kitchen, so picking the school
+  // against otherKitchenId (or any other kitchen) must fail validation.
+  const unexpected = db.prepare(`
+    INSERT INTO schools (kitchen_id, name, npsn, address, village, district, city, province, postal_code, student_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(otherKitchenId, 'SDN Other', '10000099', 'Jalan', 'V', 'D', 'C', 'P', '00000', 1);
+  const otherSchoolId = Number(unexpected.lastInsertRowid);
+
   const invalid = await app.request('/api/admin/menus', jsonOptions('POST', {
-    name: 'Menu Salah Relasi', kitchen_id: otherKitchenId, school_id: schoolId,
+    name: 'Menu Salah Relasi', school_id: otherSchoolId,
     meal_type: 'lunch', menu_date: '2026-08-30', compositions: [{ food_item_id: foodItemId, amount: 150, unit: 'g' }],
   }, sessionCookie));
   assert.equal(invalid.status, 400);
 
   const created = await app.request('/api/admin/menus', jsonOptions('POST', {
-    name: 'Nasi Ayam', kitchen_id: kitchenId, school_id: schoolId,
+    name: 'Nasi Ayam', school_id: schoolId,
     meal_type: 'lunch', menu_date: '2026-08-30', description: 'Nasi ayam lezat',
     compositions: [{ food_item_id: foodItemId, amount: 150, unit: 'g' }],
   }, sessionCookie));
@@ -66,7 +77,7 @@ test('menu CRUD validates kitchen-school relationship and uses session admin as 
 
   const menuId = createdBody.data.id;
   const updated = await app.request(`/api/admin/menus/${menuId}`, jsonOptions('PATCH', {
-    name: 'Nasi Ayam Update', kitchen_id: kitchenId, school_id: schoolId,
+    name: 'Nasi Ayam Update', school_id: schoolId,
     meal_type: 'dinner', menu_date: '2026-08-30',
   }, sessionCookie));
   assert.equal(updated.status, 400);
@@ -117,19 +128,36 @@ test('admin API returns JSON 401 without a session', async () => {
   assert.deepEqual(await response.json(), { message: 'Unauthorized' });
 });
 
-test('public aspirations never expose sender email while admin can respond from session identity', async () => {
+test('public submissions require full contact info and are scoped by kitchen while admins can respond from session identity', async () => {
   const { app, db, sessionCookie, admin } = createTestAppWithSession();
+  const { kitchenId } = addLocations(db);
+  // Link the admin to the test kitchen so they can manage reports addressed to it
+  db.prepare('INSERT INTO admin_kitchens (admin_id, kitchen_id) VALUES (?, ?)').run(admin.id, kitchenId);
+
+  const invalid = await app.request('/api/aspirations', jsonOptions('POST', {
+    sender_name: 'Warga', category: 'Menu', description: 'Mohon tambah buah.',
+  }));
+  assert.equal(invalid.status, 400);
+  const invalidBody = await invalid.json();
+  assert.ok(invalidBody.errors.sender_phone);
+  assert.ok(invalidBody.errors.kitchen_id);
+
   const created = await app.request('/api/aspirations', jsonOptions('POST', {
-    sender_name: 'Warga', sender_email: 'warga@example.com', category: 'Menu', description: 'Mohon tambah buah.',
+    sender_name: 'Warga',
+    sender_email: 'warga@example.com',
+    sender_phone: '081234567890',
+    kitchen_id: kitchenId,
+    category: 'Menu',
+    description: 'Mohon tambah buah.',
   }));
   assert.equal(created.status, 201);
   const id = (await created.json()).data.id;
 
+  // Public users must not be able to read or list feedback after submission
   const publicDetail = await app.request(`/api/aspirations/${id}`);
-  assert.equal(publicDetail.status, 200);
-  const publicBody = await publicDetail.json();
-  assert.equal(publicBody.data.sender_name, 'Warga');
-  assert.equal('sender_email' in publicBody.data, false);
+  assert.equal(publicDetail.status, 404);
+  const publicList = await app.request('/api/aspirations');
+  assert.equal(publicList.status, 404);
 
   const response = await app.request(`/api/admin/aspirations/${id}`, jsonOptions('PATCH', {
     status: 'completed', admin_response: 'Sudah ditindaklanjuti.', responded_by: 9999,
@@ -138,9 +166,14 @@ test('public aspirations never expose sender email while admin can respond from 
   const responseBody = await response.json();
   assert.equal(responseBody.data.responded_by, admin.id);
   assert.equal(responseBody.data.status, 'completed');
+  assert.equal(responseBody.data.admin_response, 'Sudah ditindaklanjuti.');
+  assert.equal(responseBody.data.kitchen.id, kitchenId);
 
-  const publicList = await app.request('/api/aspirations');
-  assert.equal('sender_email' in (await publicList.json()).data[0], false);
+  // Admin must see sender contact info they need to follow up
+  const adminDetail = await app.request(`/api/admin/aspirations/${id}`, { headers: { cookie: sessionCookie } });
+  const adminBody = await adminDetail.json();
+  assert.equal(adminBody.data.sender_email, 'warga@example.com');
+  assert.equal(adminBody.data.sender_phone, '081234567890');
   assert.equal(db.prepare('SELECT responded_by FROM aspirations WHERE id = ?').get(id).responded_by, admin.id);
 });
 

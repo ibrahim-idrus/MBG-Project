@@ -25,6 +25,7 @@ export const AdminLayout: FC<AdminLayoutProps> = ({ title, activePage, variant =
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
         <style dangerouslySetInnerHTML={{ __html: `
           body { font-family: 'Plus Jakarta Sans', sans-serif; }
           .material-symbols-outlined {
@@ -35,7 +36,7 @@ export const AdminLayout: FC<AdminLayoutProps> = ({ title, activePage, variant =
       <body class="bg-background text-on-background font-body-md min-h-screen flex">
         <Sidebar activePage={activePage} variant={variant} />
         <div class="flex-1 flex flex-col md:ml-[240px] w-full md:w-[calc(100%-240px)] min-h-screen">
-          <Header title={title} />
+          <Header title={title} variant={variant} />
           <main class="flex-1 p-container-margin overflow-y-auto">
             {children}
           </main>

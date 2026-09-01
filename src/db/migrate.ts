@@ -22,6 +22,9 @@ const MIGRATION_FILES = [
   '010_create_food_items.sql',
   '011_create_menu_compositions.sql',
   '012_remove_nutrition_from_menus.sql',
+  '013_alter_aspirations.sql',
+  '014_create_admin_kitchens.sql',
+  '015_backfill_admin_kitchens.sql',
 ];
 
 export function runMigrations(db?: Database.Database): void {

@@ -10,6 +10,10 @@ const script = String.raw`
   const rows = document.getElementById('menu-rows');
   const message = document.getElementById('menu-message');
   const detailModal = document.getElementById('menu-detail-modal');
+  const kitchenSelect = document.getElementById('page-kitchen-select');
+  const helperText = document.getElementById('kitchen-helper');
+  const addBtnWrapper = document.getElementById('menu-add-wrapper');
+  const addBtnInner = addBtnWrapper ? addBtnWrapper.querySelector('button') : null;
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   const api = async (url, options) => { const response = await fetch(url, options); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(response.status === 401 ? 'Sesi berakhir. Silakan masuk kembali.' : Object.values(data.errors || {}).join(' ') || data.message || 'Permintaan gagal.'); return data; };
   const notify = (text, error = false) => {
@@ -25,12 +29,14 @@ const script = String.raw`
   const setValue = (name, value) => { if (form.elements[name]) form.elements[name].value = value ?? ''; };
   const MEAL_LABELS = { breakfast: 'Sarapan', lunch: 'Makan Siang', snack: 'Snack' };
 
-  let kitchens = [];
+  let allKitchens = [];
+  let selectedKitchenId = null;
+  let selectedKitchenName = '';
   let schools = [];
   let foodItems = [];
   let compositions = [];
+  let editingId = null;
 
-  const kitchenSelect = document.getElementById('menu-kitchen');
   const schoolSelect = document.getElementById('menu-school');
   const compContainer = document.getElementById('compositions-container');
 
@@ -39,86 +45,132 @@ const script = String.raw`
   setup.hidden = true;
   form.prepend(setup);
 
+  function updatePageState() {
+    const hasKitchen = selectedKitchenId != null;
+    if (addBtnWrapper) {
+      addBtnWrapper.classList.toggle('opacity-50', !hasKitchen);
+      addBtnWrapper.classList.toggle('pointer-events-none', !hasKitchen);
+    }
+    helperText.textContent = hasKitchen ? '' : 'Silakan pilih dapur terlebih dahulu.';
+    helperText.classList.toggle('hidden', hasKitchen);
+    document.getElementById('menu-table-card').classList.toggle('hidden', !hasKitchen);
+  }
+
+  async function loadSchools() {
+    if (!selectedKitchenId) { schools = []; return; }
+    try {
+      const result = await api('/api/admin/schools?kitchen_id=' + selectedKitchenId + '&per_page=100');
+      schools = result.data || [];
+    } catch (e) { schools = []; }
+  }
+
   const renderSchools = (selected = '') => {
-    const matching = schools.filter(item => String(item.kitchen_id) === kitchenSelect.value);
-    schoolSelect.innerHTML = '<option value="">Pilih sekolah</option>' + matching.map(item => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('');
+    schoolSelect.innerHTML = '<option value="">Pilih sekolah</option>' + schools.map(item => '<option value="'+item.id+'">'+esc(item.name)+'</option>').join('');
     schoolSelect.value = String(selected);
-    schoolSelect.disabled = !kitchenSelect.value || matching.length === 0;
-    const missing = kitchens.length === 0 ? 'Data referensi dapur BGN belum tersedia.' : schools.length === 0 ? 'Data referensi sekolah BGN belum tersedia.' : kitchenSelect.value && matching.length === 0 ? 'Dapur ini belum memiliki sekolah pada data referensi BGN.' : '';
+    schoolSelect.disabled = schools.length === 0;
+    const missing = !selectedKitchenId
+      ? 'Akun admin belum terhubung ke dapur MBG. Hubungi super admin.'
+      : schools.length === 0
+        ? 'Dapur ini belum memiliki sekolah pada data referensi BGN.'
+        : '';
     setup.hidden = !missing;
-    setup.innerHTML = esc(missing)+' <a href="/admin/lokasi" class="text-primary underline font-semibold">Lihat dapur dan sekolah</a>';
-    const submit = form.querySelector('button[type="submit"]');
-    submit.disabled = Boolean(missing);
-    submit.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
-  };
-  kitchenSelect.addEventListener('change', () => renderSchools());
-
-  const loadOptions = async () => {
-    const [kitchenResult, schoolResult, foodResult] = await Promise.all([
-      api('/api/admin/kitchens?per_page=100'),
-      api('/api/admin/schools?per_page=100'),
-      api('/api/admin/food-items/all'),
-    ]);
-    kitchens = kitchenResult.data;
-    schools = schoolResult.data;
-    foodItems = foodResult.data;
-    kitchenSelect.innerHTML = '<option value="">Pilih dapur</option>' + kitchens.map(item => '<option value="'+item.id+'">'+esc(item.name)+' ('+esc(item.code)+')</option>').join('');
-    renderSchools();
+    setup.innerHTML = esc(missing) + ' <a href="/admin/lokasi" class="text-primary underline font-semibold">Lihat dapur dan sekolah</a>';
   };
 
-  const renderCompositions = () => {
+  function findFoodItem(id) {
+    return foodItems.find((f) => f.id === Number(id)) || null;
+  }
+
+  function readRow(idx) {
+    const rowEl = compContainer.querySelector('[data-row="' + idx + '"]');
+    if (!rowEl) return null;
+    const food = rowEl.querySelector('.comp-food');
+    const amount = rowEl.querySelector('.comp-amount');
+    const unit = rowEl.querySelector('.comp-unit');
+    return { rowEl, food, amount, unit };
+  }
+
+  function updateRowNutrition(idx) {
+    const comp = compositions[idx];
+    const fi = findFoodItem(comp.food_item_id);
+    const ratio = (Number(comp.amount) || 0) / 100;
+    const cal = fi ? Math.round(fi.calories_per_100g * ratio * 100) / 100 : 0;
+    const prot = fi ? Math.round(fi.protein_per_100g * ratio * 100) / 100 : 0;
+    const carb = fi ? Math.round(fi.carbohydrates_per_100g * ratio * 100) / 100 : 0;
+    const fat = fi ? Math.round(fi.fat_per_100g * ratio * 100) / 100 : 0;
+    const cells = compContainer.querySelectorAll('[data-row="' + idx + '"] .comp-nutri');
+    if (cells[0]) cells[0].textContent = String(cal);
+    if (cells[1]) cells[1].textContent = String(prot);
+    if (cells[2]) cells[2].textContent = String(carb);
+    if (cells[3]) cells[3].textContent = String(fat);
+  }
+
+  function buildRow(idx, comp) {
+    const fi = findFoodItem(comp.food_item_id);
+    const ratio = (Number(comp.amount) || 0) / 100;
+    const cal = fi ? Math.round(fi.calories_per_100g * ratio * 100) / 100 : 0;
+    const prot = fi ? Math.round(fi.protein_per_100g * ratio * 100) / 100 : 0;
+    const carb = fi ? Math.round(fi.carbohydrates_per_100g * ratio * 100) / 100 : 0;
+    const fat = fi ? Math.round(fi.fat_per_100g * ratio * 100) / 100 : 0;
+    const options = ['<option value="">Pilih bahan</option>']
+      .concat(foodItems.map((f) => '<option value="'+f.id+'"'+(comp.food_item_id===f.id?' selected':'')+'>'+esc(f.name)+' ('+esc(f.default_unit)+')</option>'))
+      .join('');
+    return [
+      '<tr class="border-t border-surface-variant" data-row="'+idx+'">',
+        '<td class="p-2"><select class="w-full border border-outline-variant rounded p-1 text-sm comp-food" data-idx="'+idx+'">'+options+'</select></td>',
+        '<td class="p-2"><input type="number" min="0.01" step="0.01" class="w-full border border-outline-variant rounded p-1 text-sm comp-amount" data-idx="'+idx+'" value="'+(comp.amount||'')+'" /></td>',
+        '<td class="p-2"><input type="text" class="w-full border border-outline-variant rounded p-1 text-sm comp-unit" data-idx="'+idx+'" value="'+esc(comp.unit||'')+'" /></td>',
+        '<td class="p-2 text-right text-xs comp-nutri">'+cal+'</td>',
+        '<td class="p-2 text-right text-xs comp-nutri">'+prot+'</td>',
+        '<td class="p-2 text-right text-xs comp-nutri">'+carb+'</td>',
+        '<td class="p-2 text-right text-xs comp-nutri">'+fat+'</td>',
+        '<td class="p-2 text-center"><button type="button" class="text-error text-sm comp-remove" data-idx="'+idx+'">✕</button></td>',
+      '</tr>'
+    ].join('');
+  }
+
+  function renderCompositions() {
     if (compositions.length === 0) {
-      compContainer.innerHTML = '<p class="text-on-surface-variant text-sm italic">Belum ada komposisi. Klik "Tambah Item" untuk menambahkan.</p>';
+      compContainer.innerHTML = '<p class="text-on-surface-variant text-sm italic p-4">Belum ada komposisi. Klik "Tambah Item" untuk menambahkan.</p>';
       return;
     }
-    let html = '<table class="w-full text-left text-sm"><thead class="bg-surface-container-low"><tr><th class="p-2">Bahan</th><th class="p-2 w-24">Jumlah</th><th class="p-2 w-20">Unit</th><th class="p-2 w-20">Kal</th><th class="p-2 w-20">Prot</th><th class="p-2 w-20">Karb</th><th class="p-2 w-20">Lemak</th><th class="p-2 w-10"></th></tr></thead><tbody>';
-    for (let i = 0; i < compositions.length; i++) {
-      const c = compositions[i];
-      const fi = foodItems.find(f => f.id === c.food_item_id);
-      const ratio = c.amount / 100;
-      const cal = fi ? Math.round(fi.calories_per_100g * ratio * 100) / 100 : 0;
-      const prot = fi ? Math.round(fi.protein_per_100g * ratio * 100) / 100 : 0;
-      const carb = fi ? Math.round(fi.carbohydrates_per_100g * ratio * 100) / 100 : 0;
-      const fat = fi ? Math.round(fi.fat_per_100g * ratio * 100) / 100 : 0;
-      html += '<tr class="border-t border-surface-variant">';
-      html += '<td class="p-2"><select class="w-full border border-outline-variant rounded p-1 text-sm comp-food" data-idx="'+i+'">';
-      html += '<option value="">Pilih bahan</option>';
-      for (const f of foodItems) {
-        html += '<option value="'+f.id+'"'+(c.food_item_id===f.id?' selected':'')+'>'+esc(f.name)+' ('+esc(f.default_unit)+')</option>';
-      }
-      html += '</select></td>';
-      html += '<td class="p-2"><input type="number" min="0.01" step="0.01" class="w-full border border-outline-variant rounded p-1 text-sm comp-amount" data-idx="'+i+'" value="'+c.amount+'" /></td>';
-      html += '<td class="p-2"><input type="text" class="w-full border border-outline-variant rounded p-1 text-sm comp-unit" data-idx="'+i+'" value="'+esc(c.unit)+'" /></td>';
-      html += '<td class="p-2 text-right text-xs">'+cal+'</td>';
-      html += '<td class="p-2 text-right text-xs">'+prot+'</td>';
-      html += '<td class="p-2 text-right text-xs">'+carb+'</td>';
-      html += '<td class="p-2 text-right text-xs">'+fat+'</td>';
-      html += '<td class="p-2 text-center"><button type="button" class="text-error text-sm comp-remove" data-idx="'+i+'">✕</button></td>';
-      html += '</tr>';
-    }
-    html += '</tbody></table>';
-    compContainer.innerHTML = html;
-  };
+    const head = '<table class="w-full text-left text-sm"><thead class="bg-surface-container-low"><tr><th class="p-2">Bahan</th><th class="p-2 w-24">Jumlah</th><th class="p-2 w-20">Unit</th><th class="p-2 w-20">Kal</th><th class="p-2 w-20">Prot</th><th class="p-2 w-20">Karb</th><th class="p-2 w-20">Lemak</th><th class="p-2 w-10"></th></tr></thead><tbody>';
+    const rows = compositions.map((c, i) => buildRow(i, c)).join('');
+    compContainer.innerHTML = head + rows + '</tbody></table>';
+  }
 
-  compContainer.addEventListener('change', (e) => {
+  compContainer.addEventListener('input', (e) => {
     const idx = Number(e.target.dataset.idx);
-    if (isNaN(idx)) return;
-    if (e.target.classList.contains('comp-food')) {
-      compositions[idx].food_item_id = Number(e.target.value) || 0;
-      const fi = foodItems.find(f => f.id === compositions[idx].food_item_id);
-      if (fi) compositions[idx].unit = fi.default_unit;
-    } else if (e.target.classList.contains('comp-amount')) {
+    if (isNaN(idx) || !compositions[idx]) return;
+    if (e.target.classList.contains('comp-amount')) {
       compositions[idx].amount = Number(e.target.value) || 0;
+      updateRowNutrition(idx);
     } else if (e.target.classList.contains('comp-unit')) {
       compositions[idx].unit = e.target.value;
     }
-    renderCompositions();
+  });
+
+  compContainer.addEventListener('change', (e) => {
+    const idx = Number(e.target.dataset.idx);
+    if (isNaN(idx) || !compositions[idx]) return;
+    if (e.target.classList.contains('comp-food')) {
+      compositions[idx].food_item_id = Number(e.target.value) || 0;
+      const fi = findFoodItem(compositions[idx].food_item_id);
+      if (fi) {
+        compositions[idx].unit = fi.default_unit;
+        const refs = readRow(idx);
+        if (refs && refs.unit) refs.unit.value = fi.default_unit;
+      }
+      updateRowNutrition(idx);
+    }
   });
 
   compContainer.addEventListener('click', (e) => {
     const btn = e.target.closest('.comp-remove');
     if (!btn) return;
-    compositions.splice(Number(btn.dataset.idx), 1);
+    const idx = Number(btn.dataset.idx);
+    if (isNaN(idx)) return;
+    compositions.splice(idx, 1);
     renderCompositions();
   });
 
@@ -128,7 +180,7 @@ const script = String.raw`
   });
 
   const render = (items) => {
-    rows.innerHTML = items.length ? items.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3">'+esc(item.menu_date)+'</td><td class="p-3"><div class="font-semibold">'+esc(item.name)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.kitchen?.name)+' · '+esc(item.school?.name)+'</div></td><td class="p-3">'+esc(MEAL_LABELS[item.meal_type]||item.meal_type)+'</td><td class="p-3 text-right"><button type="button" data-detail="'+item.id+'" class="text-primary mr-2">Detail</button><button type="button" data-edit="'+item.id+'" class="text-primary mr-2">Edit</button><button type="button" data-delete="'+item.id+'" class="text-error">Hapus</button></td></tr>').join('') : '<tr><td colspan="4" class="p-8 text-center text-on-surface-variant">Belum ada menu.</td></tr>';
+    rows.innerHTML = items.length ? items.map((item) => '<tr class="border-b border-surface-variant hover:bg-surface-container-low"><td class="p-3">'+esc(item.menu_date)+'</td><td class="p-3"><div class="font-semibold">'+esc(item.name)+'</div><div class="text-xs text-on-surface-variant">'+esc(item.school?.name)+'</div></td><td class="p-3">'+esc(MEAL_LABELS[item.meal_type]||item.meal_type)+'</td><td class="p-3 text-right"><button type="button" data-detail="'+item.id+'" class="text-primary mr-2">Detail</button><button type="button" data-edit="'+item.id+'" class="text-primary mr-2">Edit</button><button type="button" data-delete="'+item.id+'" class="text-error">Hapus</button></td></tr>').join('') : '<tr><td colspan="4" class="p-8 text-center text-on-surface-variant">Belum ada menu untuk dapur ini.</td></tr>';
   };
 
   const load = async () => {
@@ -140,6 +192,7 @@ const script = String.raw`
       if (search) params.set('search', search);
       if (date) params.set('date', date);
       if (meal) params.set('meal_type', meal);
+      if (selectedKitchenId) params.set('kitchen_id', selectedKitchenId);
       const result = await api('/api/admin/menus?' + params);
       render(result.data);
     } catch (error) { notify(error.message, true); }
@@ -148,23 +201,49 @@ const script = String.raw`
   const open = async (id) => {
     form.reset();
     form.querySelector('[role="alert"]')?.remove();
+    editingId = id || null;
     form.dataset.id = id || '';
     compositions = [];
     document.getElementById('menu-modal-title').textContent = id ? 'Edit Menu' : 'Tambah Menu';
+
+    const modalKitchenLabel = document.getElementById('modal-kitchen-label');
+    if (selectedKitchenId && selectedKitchenName) {
+      modalKitchenLabel.textContent = selectedKitchenName;
+    } else {
+      modalKitchenLabel.textContent = '-';
+    }
+
     if (id) {
       const item = (await api('/api/admin/menus/' + id)).data;
       ['name','description','photo_url','menu_date','meal_type'].forEach((key) => setValue(key, item[key]));
-      setValue('kitchen_id', item.kitchen_id);
+      if (item.kitchen) {
+        modalKitchenLabel.textContent = item.kitchen.name;
+      }
+      await loadSchoolsForModal(item.kitchen_id);
       renderSchools(item.school_id);
       if (item.compositions && item.compositions.length > 0) {
-        compositions = item.compositions.map(c => ({ food_item_id: c.food_item_id || c.id, amount: c.amount, unit: c.unit }));
+        compositions = item.compositions.map((c) => ({
+          food_item_id: c.food_item_id || c.id,
+          amount: c.amount,
+          unit: c.unit,
+        }));
       }
     } else {
+      await loadSchoolsForModal(selectedKitchenId);
       renderSchools();
     }
     renderCompositions();
     modal.classList.remove('hidden');
   };
+
+  async function loadSchoolsForModal(kitchenId) {
+    if (!kitchenId) { schools = []; renderSchools(); return; }
+    try {
+      const result = await api('/api/admin/schools?kitchen_id=' + kitchenId + '&per_page=100');
+      schools = result.data || [];
+    } catch (e) { schools = []; }
+    renderSchools();
+  }
 
   const openDetail = async (id) => {
     const item = (await api('/api/admin/menus/' + id)).data;
@@ -217,12 +296,29 @@ const script = String.raw`
     detailModal.classList.remove('hidden');
   };
 
-  document.getElementById('menu-add').addEventListener('click', () => open());
+  if (addBtnWrapper) addBtnWrapper.addEventListener('click', () => open());
+  document.getElementById('menu-add-trigger').addEventListener('click', () => open());
   document.getElementById('menu-close').addEventListener('click', () => modal.classList.add('hidden'));
   document.getElementById('detail-close').addEventListener('click', () => detailModal.classList.add('hidden'));
   document.getElementById('menu-refresh').addEventListener('click', load);
   ['menu-date-filter','menu-meal-filter','menu-sort'].forEach((id) => document.getElementById(id).addEventListener('change', load));
   document.getElementById('menu-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); load(); } });
+
+  kitchenSelect.addEventListener('change', async () => {
+    const val = kitchenSelect.value;
+    if (val) {
+      selectedKitchenId = Number(val);
+      const k = allKitchens.find(x => x.id === selectedKitchenId);
+      selectedKitchenName = k ? k.name : '';
+    } else {
+      selectedKitchenId = null;
+      selectedKitchenName = '';
+    }
+    updatePageState();
+    await loadSchools();
+    renderSchools();
+    load();
+  });
 
   rows.addEventListener('click', async (event) => {
     const button = event.target.closest('button');
@@ -240,15 +336,37 @@ const script = String.raw`
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const payload = Object.fromEntries(new FormData(form).entries());
-    ['kitchen_id','school_id'].forEach((key) => { if (payload[key] !== '') payload[key] = Number(payload[key]); });
-    payload.compositions = compositions.filter(c => c.food_item_id > 0 && c.amount > 0);
+    const refs = compContainer.querySelectorAll('[data-row]');
+    refs.forEach((rowEl) => {
+      const idx = Number(rowEl.dataset.row);
+      if (isNaN(idx) || !compositions[idx]) return;
+      const amount = rowEl.querySelector('.comp-amount');
+      const unit = rowEl.querySelector('.comp-unit');
+      const food = rowEl.querySelector('.comp-food');
+      if (amount) compositions[idx].amount = Number(amount.value) || 0;
+      if (unit) compositions[idx].unit = unit.value;
+      if (food) compositions[idx].food_item_id = Number(food.value) || 0;
+    });
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+    payload.kitchen_id = selectedKitchenId;
+    payload.school_id = payload.school_id ? Number(payload.school_id) : null;
+    payload.compositions = compositions.filter((c) => c.food_item_id > 0 && c.amount > 0);
+    if (!selectedKitchenId) {
+      notify('Silakan pilih dapur terlebih dahulu.', true);
+      return;
+    }
+    if (!payload.school_id) {
+      notify('Sekolah wajib dipilih.', true);
+      return;
+    }
     if (payload.compositions.length === 0) {
       notify('Menu harus memiliki minimal satu komposisi dengan jumlah lebih dari 0.', true);
       return;
     }
     try {
-      const id = form.dataset.id;
+      const id = editingId;
       await api(id ? '/api/admin/menus/' + id : '/api/admin/menus', {
         method: id ? 'PATCH' : 'POST',
         headers: {'content-type':'application/json'},
@@ -260,8 +378,36 @@ const script = String.raw`
     } catch (error) { notify(error.message, true); }
   });
 
-  loadOptions().then(load).catch((error) => notify(error.message, true));
-  if (new URLSearchParams(location.search).get('new') === '1' || location.pathname.endsWith('/tambah')) open();
+  async function bootstrap() {
+    try {
+      const [kitchenResult, foodResult] = await Promise.all([
+        api('/api/admin/me/kitchens'),
+        api('/api/admin/food-items/all'),
+      ]);
+      allKitchens = kitchenResult.data || [];
+      foodItems = foodResult.data || [];
+
+      kitchenSelect.innerHTML = '<option value="">-- Pilih Dapur MBG --</option>' + allKitchens.map(k => '<option value="'+k.id+'">'+esc(k.name)+'</option>').join('');
+
+      if (allKitchens.length === 1) {
+        selectedKitchenId = allKitchens[0].id;
+        selectedKitchenName = allKitchens[0].name;
+        kitchenSelect.value = String(selectedKitchenId);
+      }
+
+      updatePageState();
+      if (selectedKitchenId) {
+        await loadSchools();
+        renderSchools();
+      }
+    } catch (error) { notify(error.message, true); }
+    load();
+  }
+
+  bootstrap();
+  if (new URLSearchParams(location.search).get('new') === '1' || location.pathname.endsWith('/tambah')) {
+    if (selectedKitchenId) open();
+  }
 })();
 `;
 
@@ -273,12 +419,23 @@ export const MenuPage: FC = () => (
           <h2 class="font-display-lg text-display-lg text-on-surface">Menu & Gizi</h2>
           <p class="font-body-md text-body-md text-on-surface-variant mt-1">Kelola menu, komposisi, dan informasi gizi berdasarkan dapur dan sekolah.</p>
         </div>
-        <Button variant="primary" shape="pill" type="button" onclick="document.getElementById('menu-add').click()">
-          <span class="material-symbols-outlined text-[18px]">add</span>Tambah Menu
-        </Button>
+        <div id="menu-add-wrapper">
+          <Button variant="primary" shape="pill" type="button" onclick="document.getElementById('menu-add-trigger').click()">
+            <span class="material-symbols-outlined text-[18px]">add</span>Tambah Menu
+          </Button>
+        </div>
       </div>
+
+      <div class="mb-6">
+        <label class="block font-label-md text-label-md text-on-surface mb-2">Pilih Dapur MBG</label>
+        <select id="page-kitchen-select" class="w-full sm:w-80 border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-card">
+          <option value="">-- Pilih Dapur MBG --</option>
+        </select>
+        <p id="kitchen-helper" class="mt-2 text-sm text-on-surface-variant">Silakan pilih dapur terlebih dahulu.</p>
+      </div>
+
       <div id="menu-message" hidden></div>
-      <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div id="menu-table-card" class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden hidden">
         <div class="p-card-padding border-b border-surface-variant flex flex-col lg:flex-row gap-3 lg:items-center">
           <input id="menu-search" class="flex-1 border border-outline-variant rounded-lg px-3 py-2" placeholder="Cari nama menu..." aria-label="Cari nama menu" />
           <input id="menu-date-filter" type="date" class="border border-outline-variant rounded-lg px-3 py-2" aria-label="Filter tanggal" />
@@ -309,7 +466,7 @@ export const MenuPage: FC = () => (
         </div>
       </div>
 
-      <button id="menu-add" type="button" hidden>add</button>
+      <button id="menu-add-trigger" type="button" hidden>add</button>
       <button id="menu-refresh" type="button" hidden>refresh</button>
 
       <div id="menu-modal" class="hidden fixed inset-0 z-30 bg-black/30 p-4 overflow-y-auto">
@@ -320,7 +477,11 @@ export const MenuPage: FC = () => (
           </div>
           <form id="menu-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label class="md:col-span-2">Nama Menu<input name="name" required class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label>
-            <label>Dapur<select id="menu-kitchen" name="kitchen_id" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="">Pilih dapur</option></select></label>
+            <div class="md:col-span-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] text-primary">storefront</span>
+              <span class="font-semibold">Dapur MBG:</span>
+              <span id="modal-kitchen-label" class="font-semibold text-primary">-</span>
+            </div>
             <label>Sekolah<select id="menu-school" name="school_id" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="">Pilih sekolah</option></select></label>
             <label>Waktu makan<select name="meal_type" required class="mt-1 w-full border border-outline-variant rounded-lg p-2"><option value="breakfast">Sarapan</option><option value="lunch">Makan siang</option><option value="snack">Snack</option></select></label>
             <label>Tanggal<input name="menu_date" type="date" required class="mt-1 w-full border border-outline-variant rounded-lg p-2" /></label>
