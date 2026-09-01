@@ -19,7 +19,7 @@ export const CekMbgWizard: FC = () => {
           <div class="flex flex-wrap items-center gap-3">
             <button
               id="btn-trigger-cek-mbg"
-              onclick="window.openCekMbgModal()"
+              onclick="window.location.href='/cek-mbg'"
               class="inline-flex items-center gap-2 bg-white text-primary hover:bg-white/90 active:scale-95 font-semibold px-6 py-3 rounded-full shadow-md transition-all duration-200 text-sm md:text-base"
             >
               <span class="material-symbols-outlined text-[20px]">location_searching</span>

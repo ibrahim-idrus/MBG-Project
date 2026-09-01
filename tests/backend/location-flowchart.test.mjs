@@ -183,27 +183,23 @@ test('dedicated standalone /cek-mbg story page renders full-page UI narrative re
   assert.equal(res.status, 200);
   const html = await res.text();
 
-  // Full-page header and title
-  assert.match(html, /Cek Transparansi (?:&|&amp;) Kualitas MBG/);
-  assert.match(html, /Laporan Interaktif Warga (?:&|&amp;) Orang Tua Murid/);
+  // The story must not inherit desktop dashboard navigation.
+  assert.doesNotMatch(html, /<aside\b/);
+  assert.match(html, /id="cek-mbg-story"/);
+  assert.match(html, /role="progressbar"/);
 
   // Flowchart steps and Duolingo cards
-  assert.match(html, /Izinkan Akses Lokasi\?/);
   assert.match(html, /btn-allow-location/);
   assert.match(html, /btn-deny-location/);
-  assert.match(html, /Mencari SPPG di sekitar Anda\.\.\./);
   assert.match(html, /select-province/);
-  assert.match(html, /btn-proceed-insights/);
   assert.match(html, /btn-skip-insights/);
 
   // Duolingo story narrative cards
-  assert.match(html, /Uang Makan Siang Anak Tersalurkan Utuh!/);
-  assert.match(html, /Kandungan Gizi Keseharian yang Didistribusikan/);
-  assert.match(html, /Persentase Sanitasi (?:&|&amp;) Kebersihan Dapur SPPG/);
-  assert.match(html, /Kasus Keracunan MBG dari SPPG Ini/);
-  assert.match(html, /SPPG Sangat Terpercaya (?:&|&amp;) Layak!/);
+  for (const step of ['insight-1', 'insight-2', 'insight-3', 'insight-4', 'insight-summary']) {
+    assert.match(html, new RegExp('id="story-step-' + step + '"'));
+  }
+  assert.match(html, /Data demo/);
 
   // Redirection callout to dashboard
-  assert.match(html, /Buka Dashboard Utama SPPG/);
-  assert.match(html, /redirectToDashboard/);
+  assert.match(html, /id="story-next"/);
 });

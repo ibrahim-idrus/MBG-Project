@@ -39,6 +39,8 @@ data
 # Misc
 .cache/
 coverage/
+test-results/
+playwright-report/
 # commandcode
 .commandcode
 
